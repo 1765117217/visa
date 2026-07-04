@@ -17,6 +17,7 @@
       <a href="japan.html">日本签证</a>
       <a href="korean.html">韩国签证</a>
       <a href="pricing.html">服务价格</a>
+      <a href="faq.html">常见问题</a>
       <a href="Contact.html">联系我们</a>
     </nav>
   </header>
@@ -76,12 +77,27 @@
           </div>
 
           <div class="field">
+            <label>服务类型</label>
+            <div class="services-checklist">
+              <label class="service-option"><input type="checkbox" name="serviceType" value="材料检查" />材料检查</label>
+              <label class="service-option"><input type="checkbox" name="serviceType" value="申请表填写" />申请表填写</label>
+              <label class="service-option"><input type="checkbox" name="serviceType" value="代递交协助" />代递交协助</label>
+              <label class="service-option"><input type="checkbox" name="serviceType" value="懒人包服务" />懒人包服务</label>
+              <label class="service-option"><input type="checkbox" name="serviceType" value="机票订单协助" />机票订单协助</label>
+              <label class="service-option"><input type="checkbox" name="serviceType" value="酒店订单协助" />酒店订单协助</label>
+              <label class="service-option"><input type="checkbox" name="serviceType" value="其他咨询" />其他咨询</label>
+            </div>
+          </div>
+
+          <div class="field">
             <label for="message">留言</label>
             <textarea id="message" rows="5" required></textarea>
           </div>
 
           <div class="form-actions">
             <button class="btn btn-primary" type="submit">通过 WhatsApp 咨询</button>
+            <a class="btn btn-secondary" href="faq.html">查看常见问题</a>
+            <a class="btn btn-secondary" href="documents.html">查看常用文件模板</a>
           </div>
         </form>
       </section>
@@ -94,10 +110,12 @@
 
   <script>
     const STORAGE_KEY = "visamate_basic_data";
+    const PREFILL_FLAG = "visamate_allow_prefill";
     const WHATSAPP_NUMBER = "60123456789";
     const contactForm = document.getElementById("contactForm");
 
     function prefillFromStorage() {
+      if (sessionStorage.getItem(PREFILL_FLAG) !== "1") return;
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
 
@@ -123,6 +141,10 @@
     contactForm.addEventListener("submit", function(event) {
       event.preventDefault();
 
+      const selectedServices = Array.from(document.querySelectorAll('input[name="serviceType"]:checked')).map(function(input) {
+        return "- " + input.value;
+      });
+
       const message = [
         "你好，我想咨询签证材料准备服务。",
         "姓名：" + document.getElementById("name").value.trim(),
@@ -130,6 +152,8 @@
         "申请国家：" + document.getElementById("countryApplying").value,
         "签证类型：" + document.getElementById("visaType").value,
         "电话 / WhatsApp：" + document.getElementById("phone").value.trim(),
+        "我想咨询的服务：",
+        (selectedServices.length ? selectedServices.join("\n") : "- 未选择"),
         "留言：" + document.getElementById("message").value.trim()
       ].join("\n");
 
