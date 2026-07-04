@@ -17,6 +17,7 @@
       <a href="japan.html">日本签证</a>
       <a href="korean.html">韩国签证</a>
       <a href="pricing.html">服务价格</a>
+      <a href="faq.html">常见问题</a>
       <a href="Contact.html">联系我们</a>
     </nav>
   </header>
@@ -61,6 +62,118 @@
           <li>机票行程单 / 酒店订单协助</li>
           <li>WhatsApp 人工咨询</li>
         </ul>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-heading">
+        <p class="eyebrow">服务流程</p>
+        <h2>代递交服务流程</h2>
+      </div>
+      <div class="steps-grid">
+        <article class="step-card">
+          <span class="step-badge">1</span>
+          <h3>填写基础资料</h3>
+          <p>用户选择日本或韩国，填写姓名、护照号、出发日期等基础信息。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">2</span>
+          <h3>生成材料清单</h3>
+          <p>系统根据国家和签证类型生成对应材料清单。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">3</span>
+          <h3>WhatsApp 联系人工审核</h3>
+          <p>用户通过 WhatsApp 联系我们，我们检查材料是否完整。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">4</span>
+          <h3>提交护照和材料</h3>
+          <p>客户将护照原件和材料交给我们，并签署授权书和材料接收单。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">5</span>
+          <h3>我们代递交大使馆</h3>
+          <p>我们按预约时间前往日本 / 韩国相关机构递交资料。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">6</span>
+          <h3>通知结果 / 领取护照</h3>
+          <p>递交后通知客户状态，完成后安排领取或归还护照。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-heading">
+        <p class="eyebrow">懒人包</p>
+        <h2>懒人包服务说明</h2>
+      </div>
+      <div class="inclusion-grid">
+        <article class="inclusion-card is-included">
+          <h3>包含内容</h3>
+          <ul class="feature-list">
+            <li>材料清单生成</li>
+            <li>申请表填写辅助</li>
+            <li>材料预审</li>
+            <li>预约提醒</li>
+            <li>日本 / 韩国代递交协助</li>
+            <li>递交后状态提醒</li>
+            <li>WhatsApp 人工咨询</li>
+          </ul>
+        </article>
+        <article class="inclusion-card is-excluded">
+          <h3>不包含内容</h3>
+          <ul class="feature-list">
+            <li>大使馆签证费</li>
+            <li>翻译费 / 公证费</li>
+            <li>保险费用</li>
+            <li>机票和酒店费用</li>
+            <li>签证批准保证</li>
+            <li>虚假材料</li>
+            <li>加急出签承诺</li>
+          </ul>
+        </article>
+      </div>
+      <div class="inclusion-note">懒人包适合 2–3 人拼单递交。最终价格会根据申请人数、材料复杂度、递交地点和是否需要代领取护照而定。</div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-heading">
+        <p class="eyebrow">服务优势</p>
+        <h2>为什么选择我们？</h2>
+      </div>
+      <div class="why-grid">
+        <article class="step-card">
+          <span class="step-badge">1</span>
+          <h3>中文整理官网资料</h3>
+          <p>解决官网英文资料分散、难理解的问题。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">2</span>
+          <h3>适合中国留学生</h3>
+          <p>主要服务在马来西亚的中国学生、陪读和长期停留人群。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">3</span>
+          <h3>材料清单清楚</h3>
+          <p>按日本 / 韩国不同要求生成对应材料清单。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">4</span>
+          <h3>可代递交</h3>
+          <p>在符合要求和授权的情况下，提供日本 / 韩国签证代递交协助。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">5</span>
+          <h3>不提供假材料</h3>
+          <p>坚持真实资料，不提供假机票、假酒店或虚假证明。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-badge">6</span>
+          <h3>WhatsApp 人工跟进</h3>
+          <p>客户可以通过 WhatsApp 咨询材料问题和递交安排。</p>
+        </article>
       </div>
     </section>
 
@@ -158,27 +271,13 @@
 
   <script>
     const STORAGE_KEY = "visamate_basic_data";
+    const PREFILL_FLAG = "visamate_allow_prefill";
     const form = document.getElementById("visaForm");
 
     function selectDestination(country, scrollToForm) {
       document.getElementById("destinationCountry").value = country;
       if (scrollToForm) {
         document.getElementById("basicForm").scrollIntoView({ behavior: "smooth" });
-      }
-    }
-
-    function loadSavedData() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-
-      try {
-        const data = JSON.parse(raw);
-        Object.keys(data).forEach(function(key) {
-          const field = document.getElementById(key);
-          if (field) field.value = data[key];
-        });
-      } catch (error) {
-        localStorage.removeItem(STORAGE_KEY);
       }
     }
 
@@ -199,11 +298,14 @@
 
     function saveFormData(data) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      sessionStorage.setItem(PREFILL_FLAG, "1");
     }
 
     function clearForm() {
       form.reset();
       localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(PREFILL_FLAG);
+      sessionStorage.removeItem("visamate_open_japan_form");
     }
 
     document.getElementById("clearButton").addEventListener("click", clearForm);
@@ -215,7 +317,7 @@
       window.location.href = data.destinationCountry === "日本" ? "japan.html" : "korean.html";
     });
 
-    loadSavedData();
+    clearForm();
   </script>
 </body>
 </html>
