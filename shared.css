@@ -295,10 +295,167 @@ textarea {
 .pricing-grid,
 .contact-grid,
 .result-grid,
-.japan-bottom-grid {
+.japan-bottom-grid,
+.steps-grid,
+.why-grid,
+.inclusion-grid,
+.documents-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 22px;
+}
+
+.steps-grid {
+  counter-reset: flow-step;
+}
+
+.step-card,
+.inclusion-card,
+.doc-card,
+.faq-cta,
+.official-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(207, 224, 255, 0.75);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+}
+
+.step-card {
+  position: relative;
+  padding-top: 72px;
+}
+
+.step-badge {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy-700), var(--navy-500));
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.step-card h3,
+.inclusion-card h3,
+.doc-card h3 {
+  margin: 0 0 10px;
+}
+
+.why-grid .step-card {
+  padding-top: 24px;
+}
+
+.why-grid .step-badge {
+  position: static;
+  margin-bottom: 14px;
+}
+
+.inclusion-card.is-included {
+  border-left: 6px solid var(--navy-500);
+}
+
+.inclusion-card.is-excluded {
+  border-left: 6px solid #d4a645;
+}
+
+.inclusion-note,
+.handover-box,
+.official-box,
+.progress-box {
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+}
+
+.inclusion-note,
+.official-box,
+.progress-box {
+  background: linear-gradient(180deg, rgba(231, 240, 255, 0.86), rgba(255, 255, 255, 0.95));
+  border: 1px solid #d8e7ff;
+}
+
+.handover-box {
+  background: #fff9e8;
+  border: 1px solid #f2dc95;
+  color: #715210;
+}
+
+.official-links,
+.doc-actions,
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: #dfe9fb;
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--navy-700), var(--navy-500));
+  transition: width 0.2s ease;
+}
+
+.faq-page .accordion-detail {
+  display: none;
+}
+
+.faq-page .accordion-card.open .accordion-detail {
+  display: grid;
+}
+
+.services-checklist {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 16px;
+  margin-top: 10px;
+}
+
+.service-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: #f8fbff;
+  border: 1px solid #d9e5f7;
+}
+
+.service-option input {
+  width: auto;
+  margin: 0;
+}
+
+.small-link {
+  color: var(--navy-700);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.small-link:hover {
+  text-decoration: underline;
 }
 
 .country-pill {
@@ -448,6 +605,11 @@ textarea:focus {
   padding: 18px;
 }
 
+.accordion-header .step-badge {
+  position: static;
+  flex: 0 0 auto;
+}
+
 .accordion-check {
   width: 18px;
   height: 18px;
@@ -514,6 +676,67 @@ textarea:focus {
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+}
+
+.privacy-mini {
+  color: var(--slate-500);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.merge-box {
+  display: grid;
+  gap: 16px;
+}
+
+.merge-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.merge-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  border: 1px solid #d9e5f7;
+}
+
+.merge-item-meta {
+  display: grid;
+  gap: 4px;
+}
+
+.merge-item-name {
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.merge-item-note {
+  color: var(--slate-500);
+  font-size: 0.88rem;
+}
+
+.merge-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mini-btn {
+  border: 1px solid #cfdbf3;
+  background: #edf3ff;
+  color: var(--navy-900);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 700;
 }
 
 .helper-link {
@@ -657,5 +880,9 @@ textarea:focus {
   .accordion-toggle {
     grid-column: 1 / -1;
     justify-self: start;
+  }
+
+  .progress-meta {
+    flex-direction: column;
   }
 }
