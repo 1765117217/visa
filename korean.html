@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>韩国签证代递交服务</title>
   <link rel="stylesheet" href="shared.css" />
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -17,6 +18,7 @@
       <a href="japan.html">日本签证</a>
       <a href="korean.html">韩国签证</a>
       <a href="pricing.html">服务价格</a>
+      <a href="faq.html">常见问题</a>
       <a href="Contact.html">联系我们</a>
     </nav>
   </header>
@@ -30,10 +32,50 @@
         <a class="btn btn-secondary" href="index.html">返回首页</a>
         <a class="btn btn-whatsapp" href="https://wa.me/60123456789" target="_blank" rel="noopener noreferrer">联系我们 WhatsApp</a>
       </div>
+      <div class="official-box">
+        <strong>资料更新时间：2026-07-04</strong>
+        <p>最终要求请以韩国驻马来西亚大使馆官方信息为准。</p>
+        <div class="official-links">
+          <a class="btn btn-secondary" href="https://my.mofa.go.kr/" target="_blank" rel="noopener noreferrer">韩国驻马来西亚大使馆官网</a>
+          <a class="btn btn-secondary" href="https://www.g4k.go.kr/en/main.do" target="_blank" rel="noopener noreferrer">韩国签证公告 / 预约说明页面</a>
+        </div>
+      </div>
     </div>
   </section>
 
   <main class="page-layout">
+    <section class="panel">
+      <p class="eyebrow">懒人包</p>
+      <h2>懒人包服务说明</h2>
+      <div class="inclusion-grid">
+        <article class="inclusion-card is-included">
+          <h3>包含内容</h3>
+          <ul class="feature-list">
+            <li>材料清单生成</li>
+            <li>申请表填写辅助</li>
+            <li>材料预审</li>
+            <li>预约提醒</li>
+            <li>日本 / 韩国代递交协助</li>
+            <li>递交后状态提醒</li>
+            <li>WhatsApp 人工咨询</li>
+          </ul>
+        </article>
+        <article class="inclusion-card is-excluded">
+          <h3>不包含内容</h3>
+          <ul class="feature-list">
+            <li>大使馆签证费</li>
+            <li>翻译费 / 公证费</li>
+            <li>保险费用</li>
+            <li>机票和酒店费用</li>
+            <li>签证批准保证</li>
+            <li>虚假材料</li>
+            <li>加急出签承诺</li>
+          </ul>
+        </article>
+      </div>
+      <div class="inclusion-note">懒人包适合 2–3 人拼单递交。最终价格会根据申请人数、材料复杂度、递交地点和是否需要代领取护照而定。</div>
+    </section>
+
     <section class="panel">
       <form id="koreaForm" class="form-layout">
         <div class="form-grid">
@@ -75,6 +117,19 @@
     </section>
 
     <section class="checklist-panel hidden" id="resultPanel">
+      <div class="handover-box">
+        <h2>护照与材料交接说明</h2>
+        <ul class="feature-list">
+          <li>收到护照和材料后，我们会提供材料接收单。</li>
+          <li>递交前会再次核对材料是否完整。</li>
+          <li>递交后会向客户发送递交凭证或状态说明。</li>
+          <li>我们不会长期保留客户护照。</li>
+          <li>客户领取护照时需要签收确认。</li>
+          <li>我们不会擅自将客户资料交给无关第三方。</li>
+          <li>所有资料仅用于签证材料准备和递交协助。</li>
+        </ul>
+      </div>
+
       <div class="result-grid">
         <div>
           <h2>申请资料摘要</h2>
@@ -87,8 +142,24 @@
       </div>
 
       <div class="checklist-block">
+        <div class="progress-box">
+          <div class="progress-meta">
+            <span id="progressLabel">材料完成度：0 / 9</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+        </div>
         <h2>韩国签证材料清单</h2>
         <div id="accordionList" class="accordion-list"></div>
+      </div>
+
+      <div class="detail-box merge-box">
+        <h2>合并韩国签证材料为 PDF</h2>
+        <div class="file-meta">支持 JPG、PNG、PDF 文件。所有文件只会在你的浏览器本地处理，不会上传到服务器。请不要在公共电脑处理护照、银行流水等敏感文件。</div>
+        <ul id="mergeList" class="merge-list"><li class="merge-item"><div class="merge-item-meta"><div class="merge-item-name">暂未添加可合并文件</div></div></li></ul>
+        <div class="accordion-actions">
+          <button class="btn btn-primary" type="button" id="generateCombinedPdfButton">生成合并 PDF</button>
+        </div>
       </div>
 
       <div class="disclaimer-box">本网站不是韩国大使馆、KVAC 或任何官方签证中心的网站。最终要求请以韩国驻马来西亚官方机构最新通知为准。</div>
@@ -101,12 +172,14 @@
 
   <script>
     const STORAGE_KEY = "visamate_basic_data";
+    const PREFILL_FLAG = "visamate_allow_prefill";
     const uploadState = {};
     const form = document.getElementById("koreaForm");
     const resultPanel = document.getElementById("resultPanel");
     const summaryText = document.getElementById("summaryText");
     const warningArea = document.getElementById("warningArea");
     const accordionList = document.getElementById("accordionList");
+    let mergeQueue = [];
 
     function visaTypeLabel(value) {
       return {
@@ -127,6 +200,7 @@
     }
 
     function loadSavedData() {
+      if (sessionStorage.getItem(PREFILL_FLAG) !== "1") return;
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
 
@@ -162,6 +236,7 @@
       data.email = document.getElementById("email").value.trim();
       data.phone = document.getElementById("phone").value.trim();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      sessionStorage.setItem(PREFILL_FLAG, "1");
       return data;
     }
 
@@ -313,8 +388,9 @@
         extraBank,
         "<div class=\"detail-box upload-box\">",
         "<strong>文件上传框</strong>",
-        "<input class=\"upload-input\" id=\"" + uploadId + "\" type=\"file\" accept=\".jpg,.jpeg,.png,.pdf,.docx\" multiple>",
-        "<div class=\"file-meta\">支持 JPG / PNG / PDF / DOCX，仅做当前浏览器本地预览，不会上传服务器。</div>",
+        "<input class=\"upload-input\" id=\"" + uploadId + "\" type=\"file\" accept=\".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf\" multiple>",
+        "<div class=\"file-meta\">支持 JPG、PNG、PDF，仅做当前浏览器本地预览，不会上传服务器。</div>",
+        "<div class=\"privacy-mini\">仅用于本地预览，不会上传服务器。请勿在公共电脑上传完整护照、银行流水或敏感资料。</div>",
         "<ul class=\"file-list\" id=\"" + fileListId + "\"><li>暂未选择文件</li></ul>",
         "<div class=\"upload-row\"><button class=\"btn btn-danger remove-file-btn\" type=\"button\" data-key=\"" + item.key + "\">删除文件</button></div>",
         "</div>"
@@ -371,11 +447,25 @@
         });
       });
 
+      document.querySelectorAll(".accordion-check").forEach(function(checkbox) {
+        checkbox.addEventListener("change", updateProgress);
+      });
+
       document.querySelectorAll(".upload-input").forEach(function(input) {
         input.addEventListener("change", function() {
           const key = input.id.replace("upload-", "");
-          uploadState[key] = Array.from(input.files || []);
+          const validFiles = [];
+          Array.from(input.files || []).forEach(function(file) {
+            if (isMergeableFile(file)) {
+              validFiles.push(file);
+            } else {
+              alert("目前仅支持 JPG、PNG 和 PDF 文件。");
+            }
+          });
+          uploadState[key] = validFiles;
           refreshFileList(key);
+          mergeQueue = collectMergeableFiles();
+          renderMergeList();
         });
       });
 
@@ -386,6 +476,8 @@
           const input = document.getElementById("upload-" + key);
           if (input) input.value = "";
           refreshFileList(key);
+          mergeQueue = collectMergeableFiles();
+          renderMergeList();
         });
       });
 
@@ -398,8 +490,28 @@
 
       const addButton = document.getElementById("addItineraryRow");
       const generateButton = document.getElementById("generateItineraryBtn");
+      const generateCombinedPdfButton = document.getElementById("generateCombinedPdfButton");
       if (addButton) addButton.addEventListener("click", addItineraryRow);
       if (generateButton) generateButton.addEventListener("click", generateItinerary);
+      if (generateCombinedPdfButton) {
+        generateCombinedPdfButton.addEventListener("click", function() {
+          generateCombinedPDF("Korea");
+        });
+      }
+
+      updateProgress();
+      mergeQueue = collectMergeableFiles();
+      renderMergeList();
+    }
+
+    function updateProgress() {
+      const checks = Array.from(document.querySelectorAll(".accordion-check"));
+      const total = checks.length;
+      const done = checks.filter(function(item) { return item.checked; }).length;
+      const percent = total ? Math.round((done / total) * 100) : 0;
+      document.getElementById("progressLabel").textContent = "材料完成度：" + done + " / " + total;
+      document.getElementById("progressPercent").textContent = percent + "%";
+      document.getElementById("progressFill").style.width = percent + "%";
     }
 
     function refreshFileList(key) {
@@ -409,6 +521,134 @@
       target.innerHTML = files.length
         ? files.map(function(file) { return "<li>" + file.name + "</li>"; }).join("")
         : "<li>暂未选择文件</li>";
+    }
+
+    function isMergeableFile(file) {
+      return file && (
+        file.type === "image/jpeg" ||
+        file.type === "image/png" ||
+        file.type === "application/pdf"
+      );
+    }
+
+    function collectMergeableFiles() {
+      const items = getChecklistItems();
+      const collected = [];
+      items.forEach(function(item) {
+        const files = uploadState[item.key] || [];
+        files.forEach(function(file) {
+          if (isMergeableFile(file)) {
+            collected.push({
+              key: item.key,
+              title: item.title,
+              file: file
+            });
+          }
+        });
+      });
+      return collected;
+    }
+
+    function renderMergeList() {
+      const target = document.getElementById("mergeList");
+      if (!target) return;
+      if (!mergeQueue.length) {
+        target.innerHTML = "<li class=\"merge-item\"><div class=\"merge-item-meta\"><div class=\"merge-item-name\">暂未添加可合并文件</div><div class=\"merge-item-note\">请先在材料清单中上传 JPG、PNG 或 PDF 文件。</div></div></li>";
+        return;
+      }
+
+      target.innerHTML = mergeQueue.map(function(item, index) {
+        return [
+          "<li class=\"merge-item\">",
+          "<div class=\"merge-item-meta\">",
+          "<div class=\"merge-item-name\">" + (index + 1) + ". " + item.file.name + "</div>",
+          "<div class=\"merge-item-note\">对应材料：" + item.title + "</div>",
+          "</div>",
+          "<div class=\"merge-item-actions\">",
+          "<button class=\"mini-btn\" type=\"button\" onclick=\"moveMergeItem(" + index + ", -1)\">上移</button>",
+          "<button class=\"mini-btn\" type=\"button\" onclick=\"moveMergeItem(" + index + ", 1)\">下移</button>",
+          "<button class=\"mini-btn\" type=\"button\" onclick=\"removeMergeItem(" + index + ")\">删除</button>",
+          "</div>",
+          "</li>"
+        ].join("");
+      }).join("");
+    }
+
+    function moveMergeItem(index, direction) {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= mergeQueue.length) return;
+      const temp = mergeQueue[index];
+      mergeQueue[index] = mergeQueue[targetIndex];
+      mergeQueue[targetIndex] = temp;
+      renderMergeList();
+    }
+
+    function removeMergeItem(index) {
+      if (index < 0 || index >= mergeQueue.length) return;
+      mergeQueue.splice(index, 1);
+      renderMergeList();
+    }
+
+    async function generateCombinedPDF(country) {
+      if (!mergeQueue.length) {
+        alert("请先上传至少一个 JPG、PNG 或 PDF 文件。");
+        return;
+      }
+      if (!window.PDFLib) {
+        alert("PDF 组件加载失败，请稍后重试。");
+        return;
+      }
+
+      const { PDFDocument } = window.PDFLib;
+      const outputPdf = await PDFDocument.create();
+
+      for (const item of mergeQueue) {
+        const file = item.file;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+
+        if (file.type === "application/pdf") {
+          const sourcePdf = await PDFDocument.load(bytes);
+          const copiedPages = await outputPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
+          copiedPages.forEach(function(page) {
+            outputPdf.addPage(page);
+          });
+          continue;
+        }
+
+        let embeddedImage;
+        if (file.type === "image/jpeg") {
+          embeddedImage = await outputPdf.embedJpg(bytes);
+        } else if (file.type === "image/png") {
+          embeddedImage = await outputPdf.embedPng(bytes);
+        } else {
+          alert("目前仅支持 JPG、PNG 和 PDF 文件。");
+          return;
+        }
+
+        const page = outputPdf.addPage([595.28, 841.89]);
+        const pageWidth = page.getWidth();
+        const pageHeight = page.getHeight();
+        const imageWidth = embeddedImage.width;
+        const imageHeight = embeddedImage.height;
+        const scale = Math.min((pageWidth - 40) / imageWidth, (pageHeight - 40) / imageHeight);
+        const drawWidth = imageWidth * scale;
+        const drawHeight = imageHeight * scale;
+        page.drawImage(embeddedImage, {
+          x: (pageWidth - drawWidth) / 2,
+          y: (pageHeight - drawHeight) / 2,
+          width: drawWidth,
+          height: drawHeight
+        });
+      }
+
+      const pdfBytes = await outputPdf.save();
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = country === "Japan" ? "Japan_Visa_Documents.pdf" : "Korea_Visa_Documents.pdf";
+      link.click();
+      URL.revokeObjectURL(url);
     }
 
     function addItineraryRow() {
