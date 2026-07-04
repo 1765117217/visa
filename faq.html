@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>常见问题 FAQ</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body class="faq-page">
+  <header class="site-header">
+    <div class="brand-block">
+      <a class="brand" href="index.html">留学生签证助手</a>
+      <span class="brand-tag">中国留学生日本 / 韩国签证资料辅助平台</span>
+    </div>
+    <nav class="site-nav" aria-label="主导航">
+      <a href="index.html">首页</a>
+      <a href="japan.html">日本签证</a>
+      <a href="korean.html">韩国签证</a>
+      <a href="pricing.html">服务价格</a>
+      <a href="faq.html">常见问题</a>
+      <a href="Contact.html">联系我们</a>
+    </nav>
+  </header>
+
+  <section class="page-hero">
+    <div class="panel">
+      <p class="eyebrow">FAQ</p>
+      <h1>常见问题 FAQ</h1>
+      <p class="page-intro">以下内容用于帮助你快速了解日本 / 韩国签证代递交服务的常见问题，最终要求仍以官方机构为准。</p>
+    </div>
+  </section>
+
+  <main class="page-layout">
+    <section class="panel">
+      <div id="faqList" class="accordion-list"></div>
+    </section>
+
+    <section class="faq-cta">
+      <h2>还有其他问题？</h2>
+      <p>如果你想进一步确认材料要求、递交安排或授权文件，可以直接通过 WhatsApp 联系我们。</p>
+      <div class="quick-links">
+        <a class="btn btn-whatsapp" href="https://wa.me/60123456789" target="_blank" rel="noopener noreferrer">联系 WhatsApp 咨询</a>
+        <a class="btn btn-secondary" href="documents.html">查看常用文件模板</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>本网站不是任何大使馆、领事馆、签证中心、VFS、KVAC、移民局或政府机构的官方网站。我们只提供材料准备、申请表填写、预约提醒和代递交协助。签证批准由相关官方机构决定。我们不保证签证批准，不提供假材料。</p>
+  </footer>
+
+  <script>
+    const faqItems = [
+      ["中国留学生可以在马来西亚申请日本或韩国签证吗？", "通常需要持有有效的马来西亚长期停留身份，例如 Student Pass / ePASS。最终是否可申请以对应大使馆要求为准。"],
+      ["日本签证可以代递交吗？", "可以提供材料准备和代递交协助，但通常需要申请人提供授权书原件，并以日本官方要求为准。"],
+      ["韩国签证可以代递交吗？", "可以提供韩国签证材料准备和吉隆坡代递交协助，具体递交要求以韩国驻马来西亚大使馆最新公告为准。"],
+      ["我是否需要交护照原件？", "多数签证申请需要护照原件用于递交或核验。我们收到护照后会提供材料接收单。"],
+      ["签证多久出结果？", "不同国家和申请类型处理时间不同。我们可以提供流程提醒，但不能控制大使馆处理速度。"],
+      ["被拒签会退款吗？", "签证结果由官方机构决定。我们的服务费主要用于材料准备、审核、预约和代递交服务，是否退款以服务协议为准。"],
+      ["Student Pass 快过期还能申请吗？", "需要根据签证国家要求判断。一般建议 Student Pass 保持足够有效期后再申请。"],
+      ["银行流水需要多少？", "不同国家和个案要求不同。一般建议准备近 3 至 6 个月流水和足够余额，最终以官方要求为准。"],
+      ["机票和酒店订单需要真实吗？", "必须提供真实资料。我们不提供假机票、假酒店或虚假材料。"],
+      ["你们是不是官方机构？", "不是。我们不是任何大使馆、领事馆、签证中心、VFS、KVAC、移民局或政府机构。我们只提供材料准备、申请表填写、预约提醒和代递交协助。"]
+    ];
+
+    document.getElementById("faqList").innerHTML = faqItems.map(function(item, index) {
+      return [
+        "<article class=\"accordion-card\">",
+        "<div class=\"accordion-header\">",
+        "<div class=\"step-badge\">" + (index + 1) + "</div>",
+        "<div><div class=\"accordion-title\">" + item[0] + "</div></div>",
+        "<button class=\"accordion-toggle\" type=\"button\">展开 / 收起</button>",
+        "</div>",
+        "<div class=\"accordion-detail\"><div class=\"detail-box\">" + item[1] + "</div></div>",
+        "</article>"
+      ].join("");
+    }).join("");
+
+    document.querySelectorAll(".accordion-toggle").forEach(function(button) {
+      button.addEventListener("click", function() {
+        button.closest(".accordion-card").classList.toggle("open");
+      });
+    });
+  </script>
+</body>
+</html>
