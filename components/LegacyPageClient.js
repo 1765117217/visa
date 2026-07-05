@@ -38,7 +38,9 @@ export default function LegacyPageClient({ page, exposePdfLib = false, exposeCan
 
       for (const script of page.scripts) {
         if (cancelled) return;
-        window.eval(script);
+        const scriptElement = document.createElement("script");
+        scriptElement.textContent = script;
+        document.body.appendChild(scriptElement);
       }
     }
 
