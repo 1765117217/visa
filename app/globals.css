@@ -794,6 +794,222 @@ textarea:focus {
   display: none !important;
 }
 
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 18px;
+}
+
+.auth-panel {
+  width: min(100%, 440px);
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(207, 224, 255, 0.75);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-panel h1 {
+  margin: 0 0 10px;
+  line-height: 1.15;
+  font-size: 2rem;
+}
+
+.auth-copy,
+.auth-switch {
+  color: var(--slate-700);
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.auth-form .btn {
+  width: 100%;
+}
+
+.auth-alert {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+}
+
+.auth-alert-error {
+  background: var(--danger-100);
+  border: 1px solid #f5cccc;
+  color: var(--danger-600);
+}
+
+.auth-alert-success {
+  background: var(--green-100);
+  border: 1px solid rgba(15, 159, 110, 0.2);
+  color: #08724f;
+}
+
+.auth-switch {
+  margin: 20px 0 0;
+}
+
+.auth-switch a {
+  color: var(--navy-700);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+.account-menu-root {
+  position: relative;
+  display: inline-flex;
+}
+
+.account-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  max-width: 230px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  padding: 5px 12px 5px 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.account-trigger:hover,
+.account-trigger[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.58);
+  transform: translateY(-1px);
+}
+
+.account-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  background: #ffffff;
+  color: var(--navy-900);
+  font-weight: 900;
+  box-shadow: inset 0 0 0 1px rgba(13, 27, 60, 0.08);
+}
+
+.account-name {
+  overflow: hidden;
+  max-width: 142px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 800;
+  font-size: 0.94rem;
+}
+
+.account-chevron {
+  width: 0.72em;
+  display: inline-flex;
+  justify-content: center;
+  margin-left: -2px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+
+.account-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.account-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 150;
+  width: min(280px, calc(100vw - 36px));
+  padding: 8px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: var(--slate-900);
+  box-shadow: 0 18px 44px rgba(13, 27, 60, 0.22);
+}
+
+.account-menu-meta {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px 12px;
+}
+
+.account-menu-meta span {
+  color: var(--slate-500);
+  font-size: 0.82rem;
+}
+
+.account-menu-meta strong {
+  overflow-wrap: anywhere;
+  font-size: 0.92rem;
+}
+
+.account-menu-separator {
+  height: 1px;
+  margin: 2px 0 6px;
+  background: var(--slate-200);
+}
+
+.account-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--slate-900);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.site-nav .account-menu-item {
+  color: var(--slate-900);
+}
+
+.account-menu-item:hover {
+  background: var(--sky-100);
+  color: var(--slate-900);
+}
+
+.site-nav .account-menu-item:hover {
+  background: var(--sky-100);
+  color: var(--slate-900);
+  transform: none;
+}
+
+.account-menu-signout {
+  margin-top: 4px;
+  color: var(--danger-600);
+}
+
+.site-nav .account-menu-signout {
+  color: var(--danger-600);
+}
+
+.account-menu-signout:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 .site-footer {
   margin-top: 34px;
   padding-top: 24px;
