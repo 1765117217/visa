@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
-import AccountMenu from "@/components/AccountMenu";
 import SiteLayout from "@/components/layout/SiteLayout";
 import HomePageClient from "@/components/marketing/HomePageClient";
 import { createClient } from "@/lib/supabase/server.js";
@@ -16,11 +15,8 @@ export default async function HomePage() {
   }
 
   return (
-    <>
-      <SiteLayout>
-        <HomePageClient />
-      </SiteLayout>
-      <AccountMenu email={data.claims.email || ""} />
-    </>
+    <SiteLayout>
+      <HomePageClient />
+    </SiteLayout>
   );
 }

@@ -1,27 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import {
+  ACCOUNT_PROFILE_UPDATED_EVENT,
+  ACCOUNT_ROUTE
+} from "@/lib/auth/account-menu";
 import { getAccountInitial, getAccountName } from "@/lib/auth/account";
 import {
   getBrowserSupabaseClient,
   hasSupabasePublicEnv
 } from "@/lib/supabase/client.js";
 
-export default function AccountMenu({ email }) {
+export default function AccountMenu({ email, displayName = "" }) {
   const router = useRouter();
+  const pathname = usePathname();
   const menuRef = useRef(null);
   const [navTarget, setNavTarget] = useState(null);
-  const [session, setSession] = useState(email ? { email } : null);
+  const [session, setSession] = useState(
+    email ? { email, displayName } : null
+  );
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (email) {
+      setSession({ email, displayName });
+    }
+  }, [email, displayName]);
+
+  useEffect(() => {
     setNavTarget(document.querySelector(".site-nav"));
-  }, []);
+    setAccountMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!hasSupabasePublicEnv()) {
@@ -40,7 +54,17 @@ export default function AccountMenu({ email }) {
       if (!isMounted) return;
 
       const userEmail = data.session?.user?.email || email;
-      setSession(userEmail ? { email: userEmail } : null);
+      setSession((current) =>
+        userEmail
+          ? {
+              email: userEmail,
+              displayName:
+                userEmail === email
+                  ? displayName
+                  : current?.displayName || ""
+            }
+          : null
+      );
     }
 
     void syncSession();
@@ -49,14 +73,45 @@ export default function AccountMenu({ email }) {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       const userEmail = nextSession?.user?.email || "";
-      setSession(userEmail ? { email: userEmail } : null);
+      setSession((current) =>
+        userEmail
+          ? {
+              email: userEmail,
+              displayName:
+                userEmail === email
+                  ? displayName
+                  : current?.displayName || ""
+            }
+          : null
+      );
     });
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [email]);
+  }, [email, displayName]);
+
+  useEffect(() => {
+    function handleProfileUpdated(event) {
+      const nextDisplayName = event.detail?.displayName || "";
+      setSession((current) =>
+        current ? { ...current, displayName: nextDisplayName } : current
+      );
+    }
+
+    window.addEventListener(
+      ACCOUNT_PROFILE_UPDATED_EVENT,
+      handleProfileUpdated
+    );
+
+    return () => {
+      window.removeEventListener(
+        ACCOUNT_PROFILE_UPDATED_EVENT,
+        handleProfileUpdated
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (!accountMenuOpen) {
@@ -108,8 +163,8 @@ export default function AccountMenu({ email }) {
     }
   }
 
-  const accountName = getAccountName(session.email);
-  const accountInitial = getAccountInitial(session.email);
+  const accountName = getAccountName(session.email, session.displayName);
+  const accountInitial = getAccountInitial(session.email, session.displayName);
 
   return createPortal(
     <div className="account-menu-root" ref={menuRef}>
@@ -141,7 +196,7 @@ export default function AccountMenu({ email }) {
           <div className="account-menu-separator" />
           <Link
             className="account-menu-item"
-            href="/"
+            href={ACCOUNT_ROUTE}
             role="menuitem"
             onClick={() => setAccountMenuOpen(false)}
           >

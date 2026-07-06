@@ -1,10 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { passTypeOptions, visaTypeOptions, whatsappNumber } from "@/data/pages/site";
 import { InclusionGrid } from "@/components/marketing/HomePageClient";
+import {
+  fetchCurrentProfile,
+  syncBasicDataToProfile
+} from "@/lib/profile/client.js";
+import { mergeProfileIntoBasicData } from "@/lib/profile/forms.js";
 
 const STORAGE_KEY = "visamate_basic_data";
 const PREFILL_FLAG = "visamate_allow_prefill";
@@ -26,6 +32,7 @@ const labelMaps = {
 };
 
 export default function VisaChecklistPage({ page }) {
+  const router = useRouter();
   const [form, setForm] = useState(emptyForm);
   const [resultVisible, setResultVisible] = useState(false);
   const [openCards, setOpenCards] = useState(() => new Set());
@@ -41,29 +48,54 @@ export default function VisaChecklistPage({ page }) {
   const progress = Math.round((checkedItems.size / page.checklist.length) * 100);
 
   useEffect(() => {
-    if (sessionStorage.getItem(PREFILL_FLAG) !== "1") return;
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    let isMounted = true;
 
-    try {
-      const data = JSON.parse(raw);
-      setForm((current) => ({
-        ...current,
-        fullName: data.fullName || "",
-        passportNo: data.passportNo || "",
-        nationality: data.nationality || "",
-        passType: data.passType || "",
-        visaType: data.visaType || "",
-        travelDate: data.travelDate || "",
-        email: data.email || "",
-        phone: data.phone || ""
-      }));
-      if (hasMeaningfulData(data)) {
+    async function hydrateProfile() {
+      let savedData = null;
+
+      if (sessionStorage.getItem(PREFILL_FLAG) === "1") {
+        const raw = localStorage.getItem(STORAGE_KEY);
+
+        if (raw) {
+          try {
+            savedData = JSON.parse(raw);
+          } catch {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        }
+      }
+
+      const profile = await fetchCurrentProfile();
+      if (!isMounted) return;
+
+      const nextForm = {
+        ...emptyForm,
+        ...(savedData
+          ? {
+              fullName: savedData.fullName || "",
+              passportNo: savedData.passportNo || "",
+              nationality: savedData.nationality || "",
+              passType: savedData.passType || "",
+              visaType: savedData.visaType || "",
+              travelDate: savedData.travelDate || "",
+              email: savedData.email || "",
+              phone: savedData.phone || ""
+            }
+          : {})
+      };
+
+      setForm(mergeProfileIntoBasicData(nextForm, profile || {}));
+
+      if (savedData && hasMeaningfulData(savedData)) {
         setResultVisible(true);
       }
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
     }
+
+    void hydrateProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   function updateField(event) {
@@ -86,9 +118,10 @@ export default function VisaChecklistPage({ page }) {
     return data;
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    persistForm();
+    const data = persistForm();
+    await syncBasicDataToProfile(data);
     setResultVisible(true);
     window.requestAnimationFrame(() => {
       document.getElementById("resultPanel")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -196,9 +229,12 @@ export default function VisaChecklistPage({ page }) {
     URL.revokeObjectURL(url);
   }
 
-  function openJapanForm() {
-    persistForm();
+  async function openJapanForm(event) {
+    event?.preventDefault();
+    const data = persistForm();
+    await syncBasicDataToProfile(data);
     sessionStorage.setItem("visamate_open_japan_form", "1");
+    router.push("/japan-form");
   }
 
   const activeItineraryRows = itineraryRows.filter(

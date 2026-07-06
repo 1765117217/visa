@@ -1,8 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { homePage, passTypeOptions, visaTypeOptions } from "@/data/pages/site";
+import {
+  fetchCurrentProfile,
+  syncBasicDataToProfile
+} from "@/lib/profile/client.js";
+import { mergeProfileIntoBasicData } from "@/lib/profile/forms.js";
 
 const STORAGE_KEY = "visamate_basic_data";
 const PREFILL_FLAG = "visamate_allow_prefill";
@@ -24,6 +29,39 @@ export default function HomePageClient() {
   const formSectionRef = useRef(null);
   const [form, setForm] = useState(initialForm);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function hydrateProfile() {
+      let savedData = null;
+      const raw = localStorage.getItem(STORAGE_KEY);
+
+      if (raw) {
+        try {
+          savedData = JSON.parse(raw);
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
+      const profile = await fetchCurrentProfile();
+      if (!isMounted) return;
+
+      const nextForm = {
+        ...initialForm,
+        ...(savedData || {})
+      };
+
+      setForm(mergeProfileIntoBasicData(nextForm, profile || {}));
+    }
+
+    void hydrateProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   function updateField(event) {
     const { id, value } = event.target;
     setForm((current) => ({ ...current, [id]: value }));
@@ -41,7 +79,7 @@ export default function HomePageClient() {
     sessionStorage.removeItem("visamate_open_japan_form");
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const data = {
       ...form,
@@ -55,6 +93,7 @@ export default function HomePageClient() {
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     sessionStorage.setItem(PREFILL_FLAG, "1");
+    await syncBasicDataToProfile(data);
     window.location.href = data.destinationCountry === "日本" ? "/japan" : "/korean";
   }
 
