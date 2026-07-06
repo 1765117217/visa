@@ -1,6 +1,10 @@
-import LegacyPageClient from "@/components/LegacyPageClient";
-import { getLegacyPage } from "@/lib/legacyHtml";
+import SiteLayout from "@/components/layout/SiteLayout";
+import { DocumentsPageContent } from "@/components/marketing/StaticPages";
 
 export default function DocumentsPage() {
-  return <LegacyPageClient page={getLegacyPage("documents.html")} />;
+  return (
+    <SiteLayout>
+      <DocumentsPageContent />
+    </SiteLayout>
+  );
 }

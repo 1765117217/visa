@@ -1,6 +1,10 @@
-import LegacyPageClient from "@/components/LegacyPageClient";
-import { getLegacyPage } from "@/lib/legacyHtml";
+import SiteLayout from "@/components/layout/SiteLayout";
+import { PricingPageContent } from "@/components/marketing/StaticPages";
 
 export default function PricingPage() {
-  return <LegacyPageClient page={getLegacyPage("pricing.html")} />;
+  return (
+    <SiteLayout>
+      <PricingPageContent />
+    </SiteLayout>
+  );
 }

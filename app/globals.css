@@ -1056,6 +1056,259 @@ textarea:focus {
   }
 }
 
+.japan-form-toolbar {
+  position: sticky;
+  top: 72px;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #d1d5db;
+  padding: 14px 7%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.japan-form-toolbar button,
+.japan-form-toolbar a,
+.japan-form-toolbar label.fake-upload {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.japan-form-toolbar .primary {
+  background: #1d4ed8;
+  color: white;
+}
+
+.japan-form-toolbar .dark {
+  background: #374151;
+  color: white;
+}
+
+.japan-form-toolbar .danger {
+  background: #b91c1c;
+  color: white;
+}
+
+.japan-form-toolbar .light {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.japan-form-toolbar .tip {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.japan-form-workspace {
+  padding: 28px 12px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  background: #f4f6fb;
+}
+
+.page-wrap {
+  width: min(96vw, 794px);
+}
+
+.page-label {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #374151;
+}
+
+.a4-page {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1241 / 1755;
+  background-color: white;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.a4-page.page-1 {
+  background-image: url("/page-1.png");
+}
+
+.a4-page.page-2 {
+  background-image: url("/page-2.png");
+}
+
+.f {
+  position: absolute;
+  border: none;
+  outline: none;
+  background: rgba(219, 234, 254, 0.18);
+  color: #000;
+  font-family: Arial, "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  font-size: clamp(6px, 0.72vw, 8px);
+  line-height: 1;
+  padding: 0 2px;
+  height: 0.78%;
+  border-radius: 1px;
+  box-shadow: none;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: middle;
+  z-index: 2;
+}
+
+input.f {
+  height: 0.78% !important;
+}
+
+.f:focus {
+  background: rgba(254, 240, 138, 0.55);
+  box-shadow: 0 0 0 1px #f59e0b inset;
+}
+
+textarea.f {
+  resize: none;
+  line-height: 1.05;
+  padding: 1px 2px;
+  white-space: normal;
+  overflow: hidden;
+}
+
+.ck {
+  position: absolute;
+  width: 0.86%;
+  height: 0.66%;
+  margin: 0;
+  accent-color: #111827;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.photo-box {
+  position: absolute;
+  left: 70.8%;
+  top: 9.2%;
+  width: 15.6%;
+  height: 10.2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: clamp(5.8px, 0.68vw, 7.8px);
+  line-height: 1.55;
+  color: #111827;
+  background: #ffffff;
+  padding: 6px;
+  overflow: hidden;
+  white-space: normal;
+  z-index: 3;
+}
+
+.photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fix-label {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  color: #111;
+  background: rgba(255, 255, 255, 0.9);
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+  font-size: clamp(5.5px, 0.65vw, 7px);
+  line-height: 1;
+  white-space: nowrap;
+  padding: 0 2px;
+}
+
+.fix-label.big {
+  font-size: clamp(6px, 0.72vw, 7.6px);
+}
+
+.fix-declare {
+  position: absolute;
+  left: 10.5%;
+  top: 85.15%;
+  width: 82.5%;
+  z-index: 4;
+  pointer-events: none;
+  color: #111;
+  background: rgba(255, 255, 255, 0.95);
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+  font-size: clamp(5.3px, 0.62vw, 6.6px);
+  line-height: 1.22;
+  padding: 2px 3px;
+}
+
+.hidden-file {
+  display: none;
+}
+
+.pdf-mode .f,
+.pdf-mode .f:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.pdf-mode .ck {
+  filter: grayscale(1);
+}
+
+.pdf-mode .page-label {
+  display: none;
+}
+
+@media print {
+  .site-header,
+  .page-hero,
+  .japan-form-toolbar,
+  .page-label,
+  .site-footer {
+    display: none !important;
+  }
+
+  .japan-form-workspace {
+    padding: 0;
+    gap: 0;
+    background: white;
+  }
+
+  .page-wrap {
+    width: 210mm;
+    margin: 0;
+  }
+
+  .a4-page {
+    width: 210mm;
+    height: 297mm;
+    box-shadow: none;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .f {
+    background: transparent !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}
+
 @media (max-width: 860px) {
   .site-header,
   .hero {

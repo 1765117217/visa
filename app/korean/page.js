@@ -1,6 +1,11 @@
-import LegacyPageClient from "@/components/LegacyPageClient";
-import { getLegacyPage } from "@/lib/legacyHtml";
+import SiteLayout from "@/components/layout/SiteLayout";
+import VisaChecklistPage from "@/components/visa/VisaChecklistPage";
+import { visaPages } from "@/data/pages/site";
 
 export default function KoreanPage() {
-  return <LegacyPageClient page={getLegacyPage("korean.html")} exposePdfLib />;
+  return (
+    <SiteLayout>
+      <VisaChecklistPage page={visaPages.korea} />
+    </SiteLayout>
+  );
 }

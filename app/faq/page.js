@@ -1,6 +1,10 @@
-import LegacyPageClient from "@/components/LegacyPageClient";
-import { getLegacyPage } from "@/lib/legacyHtml";
+import SiteLayout from "@/components/layout/SiteLayout";
+import { FaqPageContent } from "@/components/marketing/StaticPages";
 
 export default function FaqPage() {
-  return <LegacyPageClient page={getLegacyPage("faq.html")} />;
+  return (
+    <SiteLayout>
+      <FaqPageContent />
+    </SiteLayout>
+  );
 }
