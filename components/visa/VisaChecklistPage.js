@@ -14,6 +14,13 @@ import { mergeProfileIntoBasicData } from "@/lib/profile/forms.js";
 
 const STORAGE_KEY = "visamate_basic_data";
 const PREFILL_FLAG = "visamate_allow_prefill";
+const PROFILE_PREFILL_FIELDS = [
+  "fullName",
+  "nationality",
+  "phone",
+  "passType",
+  "visaType"
+];
 
 const emptyForm = {
   fullName: "",
@@ -84,7 +91,11 @@ export default function VisaChecklistPage({ page }) {
           : {})
       };
 
-      setForm(mergeProfileIntoBasicData(nextForm, profile || {}));
+      setForm(
+        mergeProfileIntoBasicData(nextForm, profile || {}, {
+          preferProfileFields: PROFILE_PREFILL_FIELDS
+        })
+      );
 
       if (savedData && hasMeaningfulData(savedData)) {
         setResultVisible(true);
