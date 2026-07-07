@@ -1,8 +1,9 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { footerDisclaimer, navigationItems } from "@/data/pages/site";
 
-export default function SiteLayout({ children }) {
+export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <header className="site-header">

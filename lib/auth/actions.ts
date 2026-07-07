@@ -3,16 +3,17 @@
 import { redirect } from "next/navigation";
 
 import { getAccountName } from "@/lib/auth/account";
-import { parseEmailPasswordForm } from "@/lib/auth/forms";
-import { isMissingProfileStoreError } from "@/lib/profile/errors.js";
-import { createClient } from "@/lib/supabase/server.js";
+import { parseEmailPasswordForm, type EmailPasswordCredentials } from "@/lib/auth/forms";
+import { isMissingProfileStoreError } from "@/lib/profile/errors";
+import { createClient } from "@/lib/supabase/server";
 
-function redirectWithError(path, error) {
-  redirect(`${path}?error=${encodeURIComponent(error.message)}`);
+function redirectWithError(path: string, error: unknown): never {
+  const message = error instanceof Error ? error.message : String(error);
+  redirect(`${path}?error=${encodeURIComponent(message)}`);
 }
 
-export async function loginAction(formData) {
-  let credentials;
+export async function loginAction(formData: FormData) {
+  let credentials: EmailPasswordCredentials;
 
   try {
     credentials = parseEmailPasswordForm(formData);
@@ -30,8 +31,8 @@ export async function loginAction(formData) {
   redirect("/");
 }
 
-export async function registerAction(formData) {
-  let credentials;
+export async function registerAction(formData: FormData) {
+  let credentials: EmailPasswordCredentials;
 
   try {
     credentials = parseEmailPasswordForm(formData);

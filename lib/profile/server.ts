@@ -1,6 +1,7 @@
-import { isMissingProfileStoreError } from "@/lib/profile/errors.js";
+import { isMissingProfileStoreError } from "@/lib/profile/errors";
 import { getAccountName } from "@/lib/auth/account";
-import { createClient } from "@/lib/supabase/server.js";
+import { createClient } from "@/lib/supabase/server";
+import type { ProfilePayload, ProfileRow } from "@/lib/profile/forms";
 
 export const PROFILE_COLUMNS =
   "id, display_name, full_name, phone, nationality, pass_type, visa_type, updated_at";
@@ -15,11 +16,12 @@ export async function getCurrentUserProfile() {
     return { user: null, profile: null };
   }
 
-  const { data, error } = await supabase
+  const { data: rawData, error } = await supabase
     .from("profiles")
     .select(PROFILE_COLUMNS)
     .eq("id", user.id)
     .maybeSingle();
+  const data = rawData as ProfileRow | null;
 
   if (isMissingProfileStoreError(error)) {
     return { user, profile: null, missingProfileStore: true };
@@ -59,10 +61,10 @@ export async function getCurrentUserProfile() {
     throw defaultError;
   }
 
-  return { user, profile: defaultProfile || data };
+  return { user, profile: (defaultProfile as ProfileRow | null) || data };
 }
 
-export async function upsertCurrentUserProfile(payload) {
+export async function upsertCurrentUserProfile(payload: ProfilePayload) {
   const supabase = await createClient();
   const {
     data: { user }

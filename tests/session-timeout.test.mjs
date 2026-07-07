@@ -5,7 +5,7 @@ import {
   ACTIVITY_EVENTS,
   IDLE_SESSION_TIMEOUT_MS,
   getIdleTimeoutRedirectPath
-} from "../lib/auth/session-timeout.js";
+} from "../lib/auth/session-timeout.ts";
 
 test("idle session timeout defaults to 30 minutes", () => {
   assert.equal(IDLE_SESSION_TIMEOUT_MS, 30 * 60 * 1000);

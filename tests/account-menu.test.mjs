@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ACCOUNT_ROUTE } from "../lib/auth/account-menu.js";
-import { getAccountInitial, getAccountName } from "../lib/auth/account.js";
+import { ACCOUNT_ROUTE } from "../lib/auth/account-menu.ts";
+import { getAccountInitial, getAccountName } from "../lib/auth/account.ts";
 
 test("getAccountName uses the email local part as the display name", () => {
   assert.equal(getAccountName("YeeChung016@gmail.com"), "YeeChung016");

@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type InputHTMLAttributes,
+  type SelectHTMLAttributes
+} from "react";
 
 import { visaTypeOptions, whatsappNumber } from "@/data/pages/site";
 
@@ -18,7 +25,17 @@ const serviceOptions = [
   "其他咨询"
 ];
 
-const emptyForm = {
+interface ContactFormValues {
+  name: string;
+  nationality: string;
+  countryApplying: string;
+  visaType: string;
+  phone: string;
+  serviceType: string[];
+  message: string;
+}
+
+const emptyForm: ContactFormValues = {
   name: "",
   nationality: "",
   countryApplying: "",
@@ -29,7 +46,7 @@ const emptyForm = {
 };
 
 export default function ContactForm() {
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<ContactFormValues>(emptyForm);
 
   useEffect(() => {
     if (sessionStorage.getItem(PREFILL_FLAG) !== "1") return;
@@ -38,7 +55,7 @@ export default function ContactForm() {
 
     try {
       const data = JSON.parse(raw);
-      const visaMap = {
+      const visaMap: Record<string, string> = {
         tourist: "旅游签证",
         visit: "探亲 / 访友签证",
         business: "商务签证"
@@ -56,12 +73,12 @@ export default function ContactForm() {
     }
   }, []);
 
-  function updateField(event) {
+  function updateField(event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     const { id, value } = event.target;
     setForm((current) => ({ ...current, [id]: value }));
   }
 
-  function updateService(event) {
+  function updateService(event: ChangeEvent<HTMLInputElement>) {
     const { checked, value } = event.target;
     setForm((current) => ({
       ...current,
@@ -71,7 +88,7 @@ export default function ContactForm() {
     }));
   }
 
-  function handleSubmit(event) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const selectedServices = form.serviceType.length
       ? form.serviceType.map((item) => `- ${item}`).join("\n")
@@ -125,7 +142,7 @@ export default function ContactForm() {
 
       <div className="field">
         <label htmlFor="message">留言</label>
-        <textarea id="message" rows="5" value={form.message} onChange={updateField} required />
+        <textarea id="message" rows={5} value={form.message} onChange={updateField} required />
       </div>
 
       <div className="form-actions">
@@ -143,7 +160,12 @@ export default function ContactForm() {
   );
 }
 
-function InputField({ id, label, type = "text", ...props }) {
+interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
+  id: string;
+  label: string;
+}
+
+function InputField({ id, label, type = "text", ...props }: InputFieldProps) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
@@ -152,7 +174,13 @@ function InputField({ id, label, type = "text", ...props }) {
   );
 }
 
-function SelectField({ id, label, options, ...props }) {
+interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  id: string;
+  label: string;
+  options: [string, string][];
+}
+
+function SelectField({ id, label, options, ...props }: SelectFieldProps) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>

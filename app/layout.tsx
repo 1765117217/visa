@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
+
 import AccountMenu from "@/components/AccountMenu";
 import IdleSessionTimeout from "@/components/IdleSessionTimeout";
 import { getAccountName } from "@/lib/auth/account";
-import { getCurrentUserProfile } from "@/lib/profile/server.js";
-import { createClient } from "@/lib/supabase/server.js";
+import { getCurrentUserProfile } from "@/lib/profile/server";
+import { createClient } from "@/lib/supabase/server";
 
 import "./globals.css";
 
@@ -41,7 +43,7 @@ async function getAccountSessionInfo() {
   }
 }
 
-export default async function RootLayout({ children }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   const accountSession = await getAccountSessionInfo();
 
   return (

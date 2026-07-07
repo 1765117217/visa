@@ -2,15 +2,23 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type InputHTMLAttributes,
+  type SelectHTMLAttributes
+} from "react";
 
-import { passTypeOptions, visaTypeOptions, whatsappNumber } from "@/data/pages/site";
+import { passTypeOptions, visaTypeOptions, whatsappNumber, type ChecklistItem, type VisaPage } from "@/data/pages/site";
 import { InclusionGrid } from "@/components/marketing/HomePageClient";
 import {
   fetchCurrentProfile,
   syncBasicDataToProfile
-} from "@/lib/profile/client.js";
-import { mergeProfileIntoBasicData } from "@/lib/profile/forms.js";
+} from "@/lib/profile/client";
+import { mergeProfileIntoBasicData } from "@/lib/profile/forms";
 
 const STORAGE_KEY = "visamate_basic_data";
 const PREFILL_FLAG = "visamate_allow_prefill";
@@ -22,7 +30,31 @@ const PROFILE_PREFILL_FIELDS = [
   "visaType"
 ];
 
-const emptyForm = {
+interface BasicForm {
+  fullName: string;
+  passportNo: string;
+  nationality: string;
+  passType: string;
+  visaType: string;
+  travelDate: string;
+  email: string;
+  phone: string;
+}
+
+interface ItineraryRow {
+  date: string;
+  city: string;
+  hotel: string;
+  activity: string;
+}
+
+interface MergeQueueItem {
+  key: string;
+  title: string;
+  file: File;
+}
+
+const emptyForm: BasicForm = {
   fullName: "",
   passportNo: "",
   nationality: "",
@@ -33,20 +65,20 @@ const emptyForm = {
   phone: ""
 };
 
-const labelMaps = {
+const labelMaps: Record<"visaType" | "passType", Record<string, string>> = {
   visaType: Object.fromEntries(visaTypeOptions.map((item) => [item.value, item.label])),
   passType: Object.fromEntries(passTypeOptions.map((item) => [item.value, item.label]))
 };
 
-export default function VisaChecklistPage({ page }) {
+export default function VisaChecklistPage({ page }: { page: VisaPage }) {
   const router = useRouter();
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<BasicForm>(emptyForm);
   const [resultVisible, setResultVisible] = useState(false);
-  const [openCards, setOpenCards] = useState(() => new Set());
-  const [checkedItems, setCheckedItems] = useState(() => new Set());
-  const [uploads, setUploads] = useState({});
-  const [mergeQueue, setMergeQueue] = useState([]);
-  const [itineraryRows, setItineraryRows] = useState([
+  const [openCards, setOpenCards] = useState<Set<string>>(() => new Set());
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(() => new Set());
+  const [uploads, setUploads] = useState<Record<string, File[]>>({});
+  const [mergeQueue, setMergeQueue] = useState<MergeQueueItem[]>([]);
+  const [itineraryRows, setItineraryRows] = useState<ItineraryRow[]>([
     { date: "", city: "", hotel: "", activity: "" }
   ]);
   const [itineraryVisible, setItineraryVisible] = useState(false);
@@ -58,7 +90,7 @@ export default function VisaChecklistPage({ page }) {
     let isMounted = true;
 
     async function hydrateProfile() {
-      let savedData = null;
+      let savedData: Partial<BasicForm> | null = null;
 
       if (sessionStorage.getItem(PREFILL_FLAG) === "1") {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -94,7 +126,7 @@ export default function VisaChecklistPage({ page }) {
       setForm(
         mergeProfileIntoBasicData(nextForm, profile || {}, {
           preferProfileFields: PROFILE_PREFILL_FIELDS
-        })
+        }) as BasicForm
       );
 
       if (savedData && hasMeaningfulData(savedData)) {
@@ -109,7 +141,7 @@ export default function VisaChecklistPage({ page }) {
     };
   }, []);
 
-  function updateField(event) {
+  function updateField(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { id, value } = event.target;
     setForm((current) => ({ ...current, [id]: value }));
   }
@@ -129,7 +161,7 @@ export default function VisaChecklistPage({ page }) {
     return data;
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = persistForm();
     await syncBasicDataToProfile(data);
@@ -139,7 +171,7 @@ export default function VisaChecklistPage({ page }) {
     });
   }
 
-  function toggleCard(key) {
+  function toggleCard(key: string) {
     setOpenCards((current) => {
       const next = new Set(current);
       if (next.has(key)) next.delete(key);
@@ -148,7 +180,7 @@ export default function VisaChecklistPage({ page }) {
     });
   }
 
-  function toggleCheck(key) {
+  function toggleCheck(key: string) {
     setCheckedItems((current) => {
       const next = new Set(current);
       if (next.has(key)) next.delete(key);
@@ -157,20 +189,20 @@ export default function VisaChecklistPage({ page }) {
     });
   }
 
-  function updateUpload(key, fileList) {
+  function updateUpload(key: string, fileList: FileList | null) {
     const files = Array.from(fileList || []).filter((file) => isMergeableFile(file));
     const nextUploads = { ...uploads, [key]: files };
     setUploads(nextUploads);
     setMergeQueue(collectMergeableFiles(page.checklist, nextUploads));
   }
 
-  function removeUpload(key) {
+  function removeUpload(key: string) {
     const nextUploads = { ...uploads, [key]: [] };
     setUploads(nextUploads);
     setMergeQueue(collectMergeableFiles(page.checklist, nextUploads));
   }
 
-  function moveMergeItem(index, direction) {
+  function moveMergeItem(index: number, direction: number) {
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= mergeQueue.length) return;
     setMergeQueue((current) => {
@@ -182,11 +214,11 @@ export default function VisaChecklistPage({ page }) {
     });
   }
 
-  function removeMergeItem(index) {
+  function removeMergeItem(index: number) {
     setMergeQueue((current) => current.filter((_, itemIndex) => itemIndex !== index));
   }
 
-  function updateItinerary(index, field, value) {
+  function updateItinerary(index: number, field: keyof ItineraryRow, value: string) {
     setItineraryRows((current) =>
       current.map((row, rowIndex) => (rowIndex === index ? { ...row, [field]: value } : row))
     );
@@ -231,7 +263,7 @@ export default function VisaChecklistPage({ page }) {
     }
 
     const pdfBytes = await outputPdf.save();
-    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const blob = new Blob([pdfBytes as BlobPart], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -240,7 +272,7 @@ export default function VisaChecklistPage({ page }) {
     URL.revokeObjectURL(url);
   }
 
-  async function openJapanForm(event) {
+  async function openJapanForm(event?: { preventDefault: () => void }) {
     event?.preventDefault();
     const data = persistForm();
     await syncBasicDataToProfile(data);
@@ -423,7 +455,26 @@ export default function VisaChecklistPage({ page }) {
   );
 }
 
-function ChecklistCard(props) {
+interface ChecklistCardProps {
+  item: ChecklistItem;
+  index: number;
+  isOpen: boolean;
+  isChecked: boolean;
+  uploads: File[];
+  onToggle: () => void;
+  onCheck: () => void;
+  onUpload: (files: FileList | null) => void;
+  onRemoveUpload: () => void;
+  onOpenJapanForm: (event?: { preventDefault: () => void }) => void;
+  itineraryRows: ItineraryRow[];
+  onAddItinerary: () => void;
+  onUpdateItinerary: (index: number, field: keyof ItineraryRow, value: string) => void;
+  onShowItinerary: () => void;
+  itineraryVisible: boolean;
+  activeItineraryRows: ItineraryRow[];
+}
+
+function ChecklistCard(props: ChecklistCardProps) {
   const {
     item,
     index,
@@ -486,7 +537,14 @@ function ChecklistCard(props) {
   );
 }
 
-function UploadBox({ item, uploads, onUpload, onRemoveUpload }) {
+interface UploadBoxProps {
+  item: ChecklistItem;
+  uploads: File[];
+  onUpload: (files: FileList | null) => void;
+  onRemoveUpload: () => void;
+}
+
+function UploadBox({ item, uploads, onUpload, onRemoveUpload }: UploadBoxProps) {
   const [bankTemplateVisible, setBankTemplateVisible] = useState(false);
   const [bankDetailVisible, setBankDetailVisible] = useState(false);
 
@@ -529,7 +587,16 @@ function UploadBox({ item, uploads, onUpload, onRemoveUpload }) {
   );
 }
 
-function ItineraryEditor({ rows, onAdd, onUpdate, onShow, visible, activeRows }) {
+interface ItineraryEditorProps {
+  rows: ItineraryRow[];
+  onAdd: () => void;
+  onUpdate: (index: number, field: keyof ItineraryRow, value: string) => void;
+  onShow: () => void;
+  visible: boolean;
+  activeRows: ItineraryRow[];
+}
+
+function ItineraryEditor({ rows, onAdd, onUpdate, onShow, visible, activeRows }: ItineraryEditorProps) {
   return (
     <>
       <div className="detail-box">
@@ -559,7 +626,7 @@ function ItineraryEditor({ rows, onAdd, onUpdate, onShow, visible, activeRows })
                     <td>{row.activity || "-"}</td>
                   </tr>
                 )) : (
-                  <tr><td colSpan="4">请先填写至少一天的行程资料。</td></tr>
+                  <tr><td colSpan={4}>请先填写至少一天的行程资料。</td></tr>
                 )}
               </tbody>
             </table>
@@ -570,7 +637,13 @@ function ItineraryEditor({ rows, onAdd, onUpdate, onShow, visible, activeRows })
   );
 }
 
-function ItineraryRow({ row, index, onUpdate }) {
+interface ItineraryRowProps {
+  row: ItineraryRow;
+  index: number;
+  onUpdate: (index: number, field: keyof ItineraryRow, value: string) => void;
+}
+
+function ItineraryRow({ row, index, onUpdate }: ItineraryRowProps) {
   return (
     <>
       <InputField id={`date-${index}`} label="日期" type="date" value={row.date} onChange={(event) => onUpdate(index, "date", event.target.value)} />
@@ -594,7 +667,12 @@ function HandoverBox() {
   );
 }
 
-function InputField({ id, label, type = "text", ...props }) {
+interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
+  id: string;
+  label: string;
+}
+
+function InputField({ id, label, type = "text", ...props }: InputFieldProps) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
@@ -603,7 +681,13 @@ function InputField({ id, label, type = "text", ...props }) {
   );
 }
 
-function SelectField({ id, label, options, ...props }) {
+interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  id: string;
+  label: string;
+  options: [string, string][];
+}
+
+function SelectField({ id, label, options, ...props }: SelectFieldProps) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
@@ -619,7 +703,7 @@ function SelectField({ id, label, options, ...props }) {
   );
 }
 
-function buildWarnings(country, data) {
+function buildWarnings(country: string, data: BasicForm) {
   const items = [
     "最终要求可能根据你的签证类型和当前马来西亚停留身份而变化，请在递交前再次核对官方通知。",
     "我们可提供材料整理与代递交协助，但不能保证签证批准。"
@@ -640,7 +724,7 @@ function buildWarnings(country, data) {
   return items;
 }
 
-function hasMeaningfulData(data) {
+function hasMeaningfulData(data: Partial<BasicForm> | null) {
   return Boolean(
     data?.fullName ||
       data?.passportNo ||
@@ -653,11 +737,14 @@ function hasMeaningfulData(data) {
   );
 }
 
-function isMergeableFile(file) {
-  return file && ["image/jpeg", "image/png", "application/pdf"].includes(file.type);
+function isMergeableFile(file: File): boolean {
+  return Boolean(file) && ["image/jpeg", "image/png", "application/pdf"].includes(file.type);
 }
 
-function collectMergeableFiles(checklist, uploads) {
+function collectMergeableFiles(
+  checklist: ChecklistItem[],
+  uploads: Record<string, File[]>
+): MergeQueueItem[] {
   return checklist.flatMap((item) =>
     (uploads[item.key] || [])
       .filter(isMergeableFile)

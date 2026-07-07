@@ -5,8 +5,8 @@ import {
   buildProfilePayload,
   mergeProfileIntoBasicData,
   parseProfileForm
-} from "../lib/profile/forms.js";
-import { isMissingProfileStoreError } from "../lib/profile/errors.js";
+} from "../lib/profile/forms.ts";
+import { isMissingProfileStoreError } from "../lib/profile/errors.ts";
 
 test("buildProfilePayload maps basic form fields and omits passport numbers", () => {
   const payload = buildProfilePayload({

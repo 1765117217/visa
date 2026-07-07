@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import { simplePages, whatsappNumber } from "@/data/pages/site";
+import { simplePages, whatsappNumber, type SimplePage } from "@/data/pages/site";
 import FaqAccordion from "@/components/marketing/FaqAccordion";
 import ContactForm from "@/components/marketing/ContactForm";
 
-export function PageHero({ page }) {
+export function PageHero({ page }: { page: SimplePage }) {
   return (
     <section className="page-hero">
       <div className="panel">

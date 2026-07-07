@@ -1,4 +1,11 @@
-export function parseEmailPasswordForm(formData) {
+export interface EmailPasswordCredentials {
+  email: string;
+  password: string;
+}
+
+export type AuthSearchParams = Record<string, string | string[] | undefined>;
+
+export function parseEmailPasswordForm(formData: FormData): EmailPasswordCredentials {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
 
@@ -17,7 +24,7 @@ export function parseEmailPasswordForm(formData) {
   return { email, password };
 }
 
-export function getAuthMessage(searchParams, key) {
+export function getAuthMessage(searchParams: AuthSearchParams | undefined | null, key: string): string {
   const value = searchParams?.[key];
 
   if (Array.isArray(value)) {

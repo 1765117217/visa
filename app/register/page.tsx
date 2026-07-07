@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getAuthMessage } from "@/lib/auth/forms";
+import { getAuthMessage, type AuthSearchParams } from "@/lib/auth/forms";
 import { registerAction } from "@/lib/auth/actions";
-import { createClient } from "@/lib/supabase/server.js";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function RegisterPage({ searchParams }) {
+export default async function RegisterPage({
+  searchParams
+}: {
+  searchParams: Promise<AuthSearchParams>;
+}) {
   const params = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
