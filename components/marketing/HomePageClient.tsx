@@ -1,18 +1,35 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes
+} from "react";
 
 import { homePage, passTypeOptions, visaTypeOptions } from "@/data/pages/site";
 import {
   fetchCurrentProfile,
   syncBasicDataToProfile
-} from "@/lib/profile/client.js";
-import { mergeProfileIntoBasicData } from "@/lib/profile/forms.js";
+} from "@/lib/profile/client";
+import { mergeProfileIntoBasicData, type BasicVisaData } from "@/lib/profile/forms";
 
 const STORAGE_KEY = "visamate_basic_data";
 const PREFILL_FLAG = "visamate_allow_prefill";
+const PROFILE_PREFILL_FIELDS = [
+  "email",
+  "fullName",
+  "nationality",
+  "phone",
+  "passType",
+  "visaType"
+];
 
-const initialForm = {
+const initialForm: BasicVisaData = {
   destinationCountry: "",
   visaType: "",
   fullName: "",
@@ -26,8 +43,8 @@ const initialForm = {
 };
 
 export default function HomePageClient() {
-  const formSectionRef = useRef(null);
-  const [form, setForm] = useState(initialForm);
+  const formSectionRef = useRef<HTMLElement | null>(null);
+  const [form, setForm] = useState<BasicVisaData>(initialForm);
 
   useEffect(() => {
     let isMounted = true;
@@ -52,7 +69,11 @@ export default function HomePageClient() {
         ...(savedData || {})
       };
 
-      setForm(mergeProfileIntoBasicData(nextForm, profile || {}));
+      setForm(
+        mergeProfileIntoBasicData(nextForm, profile || {}, {
+          preferProfileFields: PROFILE_PREFILL_FIELDS
+        })
+      );
     }
 
     void hydrateProfile();
@@ -62,12 +83,12 @@ export default function HomePageClient() {
     };
   }, []);
 
-  function updateField(event) {
+  function updateField(event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     const { id, value } = event.target;
     setForm((current) => ({ ...current, [id]: value }));
   }
 
-  function selectDestination(country) {
+  function selectDestination(country: string) {
     setForm((current) => ({ ...current, destinationCountry: country }));
     formSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   }
@@ -79,16 +100,16 @@ export default function HomePageClient() {
     sessionStorage.removeItem("visamate_open_japan_form");
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = {
       ...form,
-      fullName: form.fullName.trim(),
-      passportNo: form.passportNo.trim(),
-      nationality: form.nationality.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      notes: form.notes.trim()
+      fullName: (form.fullName || "").trim(),
+      passportNo: (form.passportNo || "").trim(),
+      nationality: (form.nationality || "").trim(),
+      email: (form.email || "").trim(),
+      phone: (form.phone || "").trim(),
+      notes: (form.notes || "").trim()
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -170,7 +191,7 @@ export default function HomePageClient() {
 
             <div className="field">
               <label htmlFor="notes">备注</label>
-              <textarea id="notes" rows="4" placeholder="例如：预计几天行程、是否已有机票酒店、是否需要我们代递交等。" value={form.notes} onChange={updateField} />
+              <textarea id="notes" rows={4} placeholder="例如：预计几天行程、是否已有机票酒店、是否需要我们代递交等。" value={form.notes} onChange={updateField} />
             </div>
 
             <div className="form-actions">
@@ -190,7 +211,15 @@ export default function HomePageClient() {
   );
 }
 
-function Section({ eyebrow, title, children }) {
+function Section({
+  eyebrow,
+  title,
+  children
+}: {
+  eyebrow: string;
+  title: string;
+  children: ReactNode;
+}) {
   return (
     <section className="section-shell">
       <div className="section-heading">
@@ -202,7 +231,7 @@ function Section({ eyebrow, title, children }) {
   );
 }
 
-export function FeatureList({ items }) {
+export function FeatureList({ items }: { items: string[] }) {
   return (
     <ul className="feature-list">
       {items.map((item) => (
@@ -230,7 +259,7 @@ export function InclusionGrid() {
   );
 }
 
-function CardGrid({ items, className }) {
+function CardGrid({ items, className }: { items: [string, string][]; className: string }) {
   return (
     <div className={className}>
       {items.map(([title, text], index) => (
@@ -244,7 +273,12 @@ function CardGrid({ items, className }) {
   );
 }
 
-function InputField({ id, label, type = "text", ...props }) {
+interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
+  id: string;
+  label: string;
+}
+
+function InputField({ id, label, type = "text", ...props }: InputFieldProps) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
@@ -253,7 +287,13 @@ function InputField({ id, label, type = "text", ...props }) {
   );
 }
 
-function SelectField({ id, label, options, ...props }) {
+interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  id: string;
+  label: string;
+  options: [string, string][];
+}
+
+function SelectField({ id, label, options, ...props }: SelectFieldProps) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>

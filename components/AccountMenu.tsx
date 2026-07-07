@@ -13,14 +13,24 @@ import { getAccountInitial, getAccountName } from "@/lib/auth/account";
 import {
   getBrowserSupabaseClient,
   hasSupabasePublicEnv
-} from "@/lib/supabase/client.js";
+} from "@/lib/supabase/client";
 
-export default function AccountMenu({ email, displayName = "" }) {
+interface AccountMenuProps {
+  email?: string;
+  displayName?: string;
+}
+
+interface AccountSession {
+  email: string;
+  displayName: string;
+}
+
+export default function AccountMenu({ email, displayName = "" }: AccountMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const menuRef = useRef(null);
-  const [navTarget, setNavTarget] = useState(null);
-  const [session, setSession] = useState(
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [navTarget, setNavTarget] = useState<Element | null>(null);
+  const [session, setSession] = useState<AccountSession | null>(
     email ? { email, displayName } : null
   );
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -50,7 +60,8 @@ export default function AccountMenu({ email, displayName = "" }) {
     let isMounted = true;
 
     async function syncSession() {
-      const { data } = await supabase.auth.getSession();
+      // supabase is narrowed non-null above, but TS resets it across the closure boundary
+      const { data } = await supabase!.auth.getSession();
       if (!isMounted) return;
 
       const userEmail = data.session?.user?.email || email;
@@ -93,8 +104,8 @@ export default function AccountMenu({ email, displayName = "" }) {
   }, [email, displayName]);
 
   useEffect(() => {
-    function handleProfileUpdated(event) {
-      const nextDisplayName = event.detail?.displayName || "";
+    function handleProfileUpdated(event: Event) {
+      const nextDisplayName = (event as CustomEvent<{ displayName?: string }>).detail?.displayName || "";
       setSession((current) =>
         current ? { ...current, displayName: nextDisplayName } : current
       );
@@ -118,13 +129,13 @@ export default function AccountMenu({ email, displayName = "" }) {
       return undefined;
     }
 
-    function handlePointerDown(event) {
-      if (!menuRef.current?.contains(event.target)) {
+    function handlePointerDown(event: PointerEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
         setAccountMenuOpen(false);
       }
     }
 
-    function handleKeyDown(event) {
+    function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setAccountMenuOpen(false);
       }

@@ -9,7 +9,7 @@ import {
   navigationItems,
   simplePages,
   visaPages
-} from "../data/pages/site.js";
+} from "../data/pages/site.ts";
 
 const projectRoot = process.cwd();
 
@@ -47,7 +47,7 @@ test("legacy extraction bridge is not imported by app route files", () => {
   const appDir = path.join(projectRoot, "app");
   const routeFiles = fs
     .readdirSync(appDir, { recursive: true, withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name === "page.js")
+    .filter((entry) => entry.isFile() && entry.name === "page.tsx")
     .map((entry) => path.join(entry.parentPath || appDir, entry.name));
 
   for (const filePath of routeFiles) {

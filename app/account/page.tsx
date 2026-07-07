@@ -3,20 +3,25 @@ import { redirect } from "next/navigation";
 import AccountProfileForm from "@/components/account/AccountProfileForm";
 import SiteLayout from "@/components/layout/SiteLayout";
 import { passTypeOptions, visaTypeOptions } from "@/data/pages/site";
-import { getCurrentUserProfile } from "@/lib/profile/server.js";
+import { getCurrentUserProfile } from "@/lib/profile/server";
+import { getAuthMessage, type AuthSearchParams } from "@/lib/auth/forms";
 
 export const dynamic = "force-dynamic";
 
-const messages = {
+const messages: Record<string, string> = {
   "profile-saved": "账户资料已保存。"
 };
 
-const errors = {
+const errors: Record<string, string> = {
   "profile-save-failed": "账户资料保存失败，请稍后再试。",
   "profile-store-missing": "账户资料表还没有建立，请先套用 Supabase migration。"
 };
 
-export default async function AccountPage({ searchParams }) {
+export default async function AccountPage({
+  searchParams
+}: {
+  searchParams: Promise<AuthSearchParams>;
+}) {
   const params = await searchParams;
   const { user, profile, missingProfileStore } = await getCurrentUserProfile();
 
@@ -24,8 +29,8 @@ export default async function AccountPage({ searchParams }) {
     redirect("/login");
   }
 
-  const message = messages[params?.message] || "";
-  const error = errors[params?.error] || "";
+  const message = messages[getAuthMessage(params, "message")] || "";
+  const error = errors[getAuthMessage(params, "error")] || "";
 
   return (
     <SiteLayout>

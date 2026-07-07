@@ -8,14 +8,14 @@ import {
   IDLE_SESSION_TIMEOUT_MS,
   getIdleTimeoutRedirectPath
 } from "@/lib/auth/session-timeout";
-import { getBrowserSupabaseClient } from "@/lib/supabase/client.js";
+import { getBrowserSupabaseClient } from "@/lib/supabase/client";
 
-const PASSIVE_EVENT_OPTIONS = { passive: true };
+const PASSIVE_EVENT_OPTIONS: AddEventListenerOptions = { passive: true };
 
-export default function IdleSessionTimeout({ enabled }) {
+export default function IdleSessionTimeout({ enabled }: { enabled: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
-  const timeoutRef = useRef(null);
+  const timeoutRef = useRef<number | null>(null);
   const signingOutRef = useRef(false);
 
   useEffect(() => {

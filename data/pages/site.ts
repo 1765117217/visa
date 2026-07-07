@@ -1,9 +1,83 @@
+export interface NavigationItem {
+  label: string;
+  href: string;
+}
+
+export interface OptionItem {
+  value: string;
+  label: string;
+}
+
+export type OfficialLink = [label: string, href: string];
+
+export interface ChecklistItem {
+  key: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  type?: string;
+  href?: string;
+  linkLabel?: string;
+  highlight?: string;
+  bankInfo?: boolean;
+  itinerary?: boolean;
+}
+
+export interface VisaPage {
+  country: string;
+  countryCode: string;
+  formId: string;
+  eyebrow: string;
+  title: string;
+  intro: string;
+  updatedAt: string;
+  officialNote: string;
+  officialLinks: OfficialLink[];
+  submitLabel: string;
+  checklistTitle: string;
+  disclaimer: string;
+  pdfName: string;
+  checklist: ChecklistItem[];
+}
+
+export interface SimplePage {
+  eyebrow: string;
+  title: string;
+  intro: string;
+}
+
+export interface PriceCard {
+  title: string;
+  rows: [label: string, amount: string][];
+}
+
+export interface PricingPage extends SimplePage {
+  priceCards: PriceCard[];
+  notes: string[];
+}
+
+export type FaqItem = [question: string, answer: string];
+
+export interface FaqPage extends SimplePage {
+  items: FaqItem[];
+}
+
+export type DocumentCard = [title: string, text: string, action: string];
+
+export interface DocumentsPage extends SimplePage {
+  cards: DocumentCard[];
+}
+
+export type ContactPage = SimplePage;
+
+export type BasicFormField = (typeof basicFormFields)[number];
+
 export const whatsappNumber = "60123456789";
 
 export const footerDisclaimer =
   "本网站不是任何大使馆、领事馆、签证中心、VFS、KVAC、移民局或政府机构的官方网站。我们只提供材料准备、申请表填写、预约提醒和代递交协助。签证批准由相关官方机构决定。我们不保证签证批准，不提供假材料。";
 
-export const navigationItems = [
+export const navigationItems: NavigationItem[] = [
   { label: "首页", href: "/" },
   { label: "日本签证", href: "/japan" },
   { label: "韩国签证", href: "/korean" },
@@ -12,13 +86,13 @@ export const navigationItems = [
   { label: "联系我们", href: "/contact" }
 ];
 
-export const visaTypeOptions = [
+export const visaTypeOptions: OptionItem[] = [
   { value: "tourist", label: "旅游签证" },
   { value: "visit", label: "探亲 / 访友签证" },
   { value: "business", label: "商务签证" }
 ];
 
-export const passTypeOptions = [
+export const passTypeOptions: OptionItem[] = [
   { value: "student_pass", label: "学生签证 Student Pass" },
   { value: "work_pass", label: "工作签证 Work Pass" },
   { value: "dependent_pass", label: "家属签证 Dependent Pass" },
@@ -36,7 +110,7 @@ export const basicFormFields = [
   "travelDate",
   "email",
   "phone"
-];
+] as const;
 
 export const inclusionItems = {
   included: [
@@ -59,7 +133,17 @@ export const inclusionItems = {
   ]
 };
 
-export const homePage = {
+export interface HomePage {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  stats: { title: string; text: string }[];
+  services: string[];
+  process: [title: string, text: string][];
+  advantages: [title: string, text: string][];
+}
+
+export const homePage: HomePage = {
   eyebrow: "马来西亚中国留学生专用",
   title: "马来西亚中国留学生日本 / 韩国签证代递交服务",
   intro:
@@ -100,7 +184,7 @@ export const homePage = {
   ]
 };
 
-const sharedChecklist = [
+const sharedChecklist: ChecklistItem[] = [
   {
     key: "passport_original",
     title: "有效护照原件",
@@ -162,7 +246,7 @@ const sharedChecklist = [
   }
 ];
 
-export const visaPages = {
+export const visaPages: { japan: VisaPage; korea: VisaPage } = {
   japan: {
     country: "日本",
     countryCode: "japan",
@@ -225,7 +309,12 @@ export const visaPages = {
   }
 };
 
-export const simplePages = {
+export const simplePages: {
+  pricing: PricingPage;
+  faq: FaqPage;
+  documents: DocumentsPage;
+  contact: ContactPage;
+} = {
   pricing: {
     eyebrow: "服务收费",
     title: "签证准备收费",

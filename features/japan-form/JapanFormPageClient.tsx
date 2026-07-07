@@ -1,9 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 
-const textFields = [
+import type { BasicVisaData } from "@/lib/profile/forms";
+
+interface FieldStyle {
+  left: string;
+  top: string;
+  width?: string;
+  height?: string;
+}
+
+type TextFieldEntry = [id: string, tag: "input" | "textarea", style: FieldStyle, page?: number];
+type CheckboxFieldEntry = [id: string, style: FieldStyle, page: number, group: string];
+type LabelEntry = [text: string, style: FieldStyle, page?: number, variant?: string];
+
+const textFields: TextFieldEntry[] = [
   ["surnameEn", "input", { left: "27.8%", top: "26.98%", width: "41.5%", height: "1.55%" }],
   ["surnameZh", "input", { left: "76.0%", top: "26.98%", width: "18.5%", height: "1.55%" }],
   ["givenEn", "input", { left: "27.8%", top: "29.05%", width: "41.5%", height: "1.55%" }],
@@ -62,7 +75,7 @@ const textFields = [
   ["signature", "input", { left: "60.0%", top: "91.78%", width: "28.0%", height: "1.25%" }, 2]
 ];
 
-const checkboxFields = [
+const checkboxFields: CheckboxFieldEntry[] = [
   ["sexMale", { left: "24.9%", top: "36.38%" }, 1, "sex"],
   ["sexFemale", { left: "33.0%", top: "36.38%" }, 1, "sex"],
   ["single", { left: "55.6%", top: "36.38%" }, 1, "marital"],
@@ -91,7 +104,7 @@ const checkboxFields = [
   ["q6no", { left: "94.2%", top: "74.70%" }, 2, "q6"]
 ];
 
-const labels = [
+const labels: LabelEntry[] = [
   ["日 / 月 / 年", { left: "24.9%", top: "35.15%" }],
   ["省", { left: "67.2%", top: "35.15%" }],
   ["市", { left: "83.0%", top: "35.15%" }],
@@ -105,13 +118,17 @@ const labels = [
   ["女", { left: "58.8%", top: "43.72%" }, 2, "big"]
 ];
 
-const initialValues = Object.fromEntries(textFields.map(([id]) => [id, ""]));
-const initialChecks = Object.fromEntries(checkboxFields.map(([id]) => [id, false]));
+const initialValues: Record<string, string> = Object.fromEntries(
+  textFields.map(([id]) => [id, ""])
+);
+const initialChecks: Record<string, boolean> = Object.fromEntries(
+  checkboxFields.map(([id]) => [id, false])
+);
 
 export default function JapanFormPageClient() {
-  const pdfRef = useRef(null);
-  const [values, setValues] = useState(initialValues);
-  const [checks, setChecks] = useState(initialChecks);
+  const pdfRef = useRef<HTMLElement | null>(null);
+  const [values, setValues] = useState<Record<string, string>>(initialValues);
+  const [checks, setChecks] = useState<Record<string, boolean>>(initialChecks);
   const [photoSrc, setPhotoSrc] = useState("");
   const [pdfMode, setPdfMode] = useState(false);
 
@@ -131,11 +148,11 @@ export default function JapanFormPageClient() {
     }
   }, []);
 
-  function setValue(id, value) {
+  function setValue(id: string, value: string) {
     setValues((current) => ({ ...current, [id]: value }));
   }
 
-  function setChecked(id, group, checked) {
+  function setChecked(id: string, group: string, checked: boolean) {
     setChecks((current) => {
       const next = { ...current };
       if (checked) {
@@ -202,7 +219,7 @@ export default function JapanFormPageClient() {
     localStorage.removeItem("visamate_basic_data");
   }
 
-  function loadPhoto(event) {
+  function loadPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -231,7 +248,7 @@ export default function JapanFormPageClient() {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const pdf = new jsPDF("p", "mm", "a4");
-    const pages = pdfRef.current.querySelectorAll(".a4-page");
+    const pages = pdfRef.current.querySelectorAll<HTMLElement>(".a4-page");
 
     for (let index = 0; index < pages.length; index += 1) {
       const canvas = await html2canvas(pages[index], {
@@ -277,7 +294,17 @@ export default function JapanFormPageClient() {
   );
 }
 
-function FormPage({ pageNumber, label, values, checks, setValue, setChecked, photoSrc }) {
+interface FormPageProps {
+  pageNumber: number;
+  label: string;
+  values: Record<string, string>;
+  checks: Record<string, boolean>;
+  setValue: (id: string, value: string) => void;
+  setChecked: (id: string, group: string, checked: boolean) => void;
+  photoSrc?: string;
+}
+
+function FormPage({ pageNumber, label, values, checks, setValue, setChecked, photoSrc }: FormPageProps) {
   return (
     <div className="page-wrap">
       <p className="page-label">{label}</p>
@@ -287,13 +314,22 @@ function FormPage({ pageNumber, label, values, checks, setValue, setChecked, pho
         ) : null}
         {textFields.filter((field) => (field[3] || 1) === pageNumber).map(([id, type, style]) => {
           const Component = type === "textarea" ? "textarea" : "input";
-          return <Component className="f" id={id} key={id} style={style} value={values[id]} onChange={(event) => setValue(id, event.target.value)} />;
+          return (
+            <Component
+              className="f"
+              id={id}
+              key={id}
+              style={style as CSSProperties}
+              value={values[id]}
+              onChange={(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setValue(id, event.target.value)}
+            />
+          );
         })}
         {checkboxFields.filter((field) => field[2] === pageNumber).map(([id, style, , group]) => (
-          <input className="ck" id={id} key={id} type="checkbox" style={style} checked={checks[id]} onChange={(event) => setChecked(id, group, event.target.checked)} />
+          <input className="ck" id={id} key={id} type="checkbox" style={style as CSSProperties} checked={checks[id]} onChange={(event) => setChecked(id, group, event.target.checked)} />
         ))}
         {labels.filter((item) => (item[2] || 1) === pageNumber).map(([text, style, , variant]) => (
-          <span className={`fix-label ${variant || ""}`} style={style} key={`${text}-${style.left}-${style.top}`}>{text}</span>
+          <span className={`fix-label ${variant || ""}`} style={style as CSSProperties} key={`${text}-${style.left}-${style.top}`}>{text}</span>
         ))}
         {pageNumber === 2 ? (
           <div className="fix-declare">本人在此声明：本申请表所填写内容真实无误。最终是否准许入境日本以及在日停留期限，由相关官方机构于入境时决定。</div>
@@ -303,7 +339,7 @@ function FormPage({ pageNumber, label, values, checks, setValue, setChecked, pho
   );
 }
 
-function prefillFromBasicData(current, data) {
+function prefillFromBasicData(current: Record<string, string>, data: BasicVisaData) {
   const next = { ...current };
   if (data.fullName) {
     const nameParts = data.fullName.trim().split(/\s+/);
@@ -331,7 +367,7 @@ function prefillFromBasicData(current, data) {
   return next;
 }
 
-function formatDateToDDMMYYYY(dateString) {
+function formatDateToDDMMYYYY(dateString: string): string {
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return dateString;
   const day = String(date.getDate()).padStart(2, "0");

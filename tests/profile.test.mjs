@@ -5,8 +5,8 @@ import {
   buildProfilePayload,
   mergeProfileIntoBasicData,
   parseProfileForm
-} from "../lib/profile/forms.js";
-import { isMissingProfileStoreError } from "../lib/profile/errors.js";
+} from "../lib/profile/forms.ts";
+import { isMissingProfileStoreError } from "../lib/profile/errors.ts";
 
 test("buildProfilePayload maps basic form fields and omits passport numbers", () => {
   const payload = buildProfilePayload({
@@ -100,6 +100,44 @@ test("mergeProfileIntoBasicData fills only missing basic data fields", () => {
     phone: "+60111111111",
     passType: "student_pass",
     visaType: "business"
+  });
+});
+
+test("mergeProfileIntoBasicData can prefer profile values for selected basic fields", () => {
+  const merged = mergeProfileIntoBasicData(
+    {
+      fullName: "Old Local Name",
+      nationality: "Old Local Nationality",
+      phone: "+60000000000",
+      passType: "tourist_pass",
+      visaType: "business",
+      passportNo: "E12345678"
+    },
+    {
+      full_name: "Zhang Wei",
+      nationality: "China",
+      phone: "+60111111111",
+      pass_type: "student_pass",
+      visa_type: "tourist"
+    },
+    {
+      preferProfileFields: [
+        "fullName",
+        "nationality",
+        "phone",
+        "passType",
+        "visaType"
+      ]
+    }
+  );
+
+  assert.deepEqual(merged, {
+    fullName: "Zhang Wei",
+    nationality: "China",
+    phone: "+60111111111",
+    passType: "student_pass",
+    visaType: "tourist",
+    passportNo: "E12345678"
   });
 });
 

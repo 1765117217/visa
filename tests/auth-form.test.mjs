@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { parseEmailPasswordForm } from "../lib/auth/forms.js";
+import { parseEmailPasswordForm } from "../lib/auth/forms.ts";
 
 test("parseEmailPasswordForm returns normalized credentials", () => {
   const formData = new FormData();

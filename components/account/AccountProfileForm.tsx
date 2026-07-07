@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 
 import { ACCOUNT_PROFILE_UPDATED_EVENT } from "@/lib/auth/account-menu";
 import { getAccountName } from "@/lib/auth/account";
-import { saveCurrentProfile } from "@/lib/profile/client.js";
+import { saveCurrentProfile } from "@/lib/profile/client";
+import type { ProfileFormValues, ProfileRow } from "@/lib/profile/forms";
+import type { OptionItem } from "@/data/pages/site";
 
-function getInitialForm(profile) {
+interface AccountProfileFormProps {
+  email: string;
+  profile: ProfileRow | null;
+  passTypeOptions: OptionItem[];
+  visaTypeOptions: OptionItem[];
+  missingProfileStore?: boolean;
+}
+
+function getInitialForm(profile: ProfileRow | null): ProfileFormValues {
   return {
     displayName: profile?.display_name || "",
     fullName: profile?.full_name || "",
@@ -23,8 +33,8 @@ export default function AccountProfileForm({
   passTypeOptions,
   visaTypeOptions,
   missingProfileStore
-}) {
-  const [form, setForm] = useState(() => ({
+}: AccountProfileFormProps) {
+  const [form, setForm] = useState<ProfileFormValues>(() => ({
     ...getInitialForm(profile),
     displayName: getAccountName(email, profile?.display_name)
   }));
@@ -32,12 +42,12 @@ export default function AccountProfileForm({
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
 
-  function updateField(event) {
+  function updateField(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (missingProfileStore) {
@@ -53,12 +63,12 @@ export default function AccountProfileForm({
     try {
       const result = await saveCurrentProfile(form);
 
-      if (result.reason === "not-authenticated") {
+      if (!result.ok && result.reason === "not-authenticated") {
         setError("登录状态已失效，请重新登录。");
         return;
       }
 
-      if (result.reason === "missing-profile-store") {
+      if (!result.ok && result.reason === "missing-profile-store") {
         setError("账户资料表还没有建立，请先套用 Supabase migration。");
         return;
       }

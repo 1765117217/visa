@@ -1,6 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-let browserClient = null;
+let browserClient: SupabaseClient | null = null;
 
 function getSupabasePublicEnv() {
   return {

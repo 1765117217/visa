@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { hasSupabasePublicEnv } from "../lib/supabase/client.js";
+import { hasSupabasePublicEnv } from "../lib/supabase/client.ts";
 
 test("hasSupabasePublicEnv accepts the publishable key env name", () => {
   const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -1,4 +1,4 @@
-export function getAccountName(email, displayName = "") {
+export function getAccountName(email?: string | null, displayName?: string | null) {
   const cleanDisplayName = String(displayName || "").trim();
   if (cleanDisplayName) {
     return cleanDisplayName;
@@ -11,7 +11,7 @@ export function getAccountName(email, displayName = "") {
   return email.split("@")[0] || "User";
 }
 
-export function getAccountInitial(email, displayName = "") {
+export function getAccountInitial(email?: string | null, displayName?: string | null) {
   const name = getAccountName(email, displayName);
   return (name[0] || "U").toUpperCase();
 }

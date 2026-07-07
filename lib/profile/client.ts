@@ -1,14 +1,27 @@
 "use client";
 
-import { buildProfilePayload } from "@/lib/profile/forms.js";
-import { isMissingProfileStoreError } from "@/lib/profile/errors.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import {
+  buildProfilePayload,
+  type BasicVisaData,
+  type ProfileFormValues,
+  type ProfileRow
+} from "@/lib/profile/forms";
+import { isMissingProfileStoreError } from "@/lib/profile/errors";
 import { getAccountName } from "@/lib/auth/account";
-import { getBrowserSupabaseClient } from "@/lib/supabase/client.js";
+import { getBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const PROFILE_COLUMNS =
   "id, display_name, full_name, phone, nationality, pass_type, visa_type, updated_at";
 
-async function getAuthenticatedUser(supabase) {
+interface SyncResult {
+  ok: boolean;
+  skipped: boolean;
+  reason?: string;
+}
+
+async function getAuthenticatedUser(supabase: SupabaseClient) {
   const {
     data: { user },
     error
@@ -21,7 +34,7 @@ async function getAuthenticatedUser(supabase) {
   return user;
 }
 
-export async function fetchCurrentProfile() {
+export async function fetchCurrentProfile(): Promise<ProfileRow | null> {
   const supabase = getBrowserSupabaseClient();
   if (!supabase) {
     return null;
@@ -39,18 +52,21 @@ export async function fetchCurrentProfile() {
     .maybeSingle();
 
   if (isMissingProfileStoreError(error)) {
-    return null;
+    return { email: user.email || "" };
   }
 
   if (error) {
     console.warn("Unable to load profile", error);
-    return null;
+    return { email: user.email || "" };
   }
 
-  return data;
+  return {
+    ...((data as ProfileRow | null) || {}),
+    email: user.email || ""
+  };
 }
 
-export async function syncBasicDataToProfile(values) {
+export async function syncBasicDataToProfile(values: BasicVisaData): Promise<SyncResult> {
   const supabase = getBrowserSupabaseClient();
   if (!supabase) {
     return { ok: false, skipped: true, reason: "missing-supabase-env" };
@@ -87,7 +103,9 @@ export async function syncBasicDataToProfile(values) {
   return { ok: true, skipped: false };
 }
 
-export async function saveCurrentProfile(values) {
+export async function saveCurrentProfile(
+  values: ProfileFormValues
+): Promise<{ ok: false; reason: string } | { ok: true; profile: ProfileRow }> {
   const supabase = getBrowserSupabaseClient();
   if (!supabase) {
     return { ok: false, reason: "missing-supabase-env" };
@@ -123,5 +141,5 @@ export async function saveCurrentProfile(values) {
     return { ok: false, reason: "save-failed" };
   }
 
-  return { ok: true, profile: data || { ...payload, id: user.id } };
+  return { ok: true, profile: (data as ProfileRow | null) || { ...payload, id: user.id } };
 }

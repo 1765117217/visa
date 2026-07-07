@@ -1,7 +1,10 @@
-export default [
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
   {
     ignores: [".next/**", "node_modules/**", "public/**", "out/**"]
   },
+  ...tseslint.configs.recommended,
   {
     languageOptions: {
       ecmaVersion: "latest",
@@ -18,4 +21,4 @@ export default [
       }
     }
   }
-];
+);

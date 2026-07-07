@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 
-export default function FaqAccordion({ items }) {
-  const [openItems, setOpenItems] = useState(() => new Set());
+import type { FaqItem } from "@/data/pages/site";
 
-  function toggle(index) {
+export default function FaqAccordion({ items }: { items: FaqItem[] }) {
+  const [openItems, setOpenItems] = useState<Set<number>>(() => new Set());
+
+  function toggle(index: number) {
     setOpenItems((current) => {
       const next = new Set(current);
       if (next.has(index)) {
