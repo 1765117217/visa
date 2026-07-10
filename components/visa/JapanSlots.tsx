@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { compareYearMonth, type DaySlot, type SlotStatus, type YearMonth } from "@/lib/japanSlots";
+import {
+  MAX_MONTH_LOOKAHEAD,
+  addMonthsToYearMonth,
+  compareYearMonth,
+  type DaySlot,
+  type SlotStatus,
+  type YearMonth
+} from "@/lib/japanSlots";
 
 interface SlotsResponse {
   month: string;
@@ -29,8 +36,7 @@ function getCurrentYearMonth(): YearMonth {
 }
 
 function shiftMonth(current: YearMonth, offset: number): YearMonth {
-  const date = new Date(current.year, current.month - 1 + offset, 1);
-  return { year: date.getFullYear(), month: date.getMonth() + 1 };
+  return addMonthsToYearMonth(current, offset);
 }
 
 function formatMonth({ year, month }: YearMonth) {
@@ -58,11 +64,13 @@ function formatShortDate(dateValue: string) {
 
 export default function JapanSlots() {
   const minYm = useMemo(() => getCurrentYearMonth(), []);
+  const maxYm = useMemo(() => addMonthsToYearMonth(minYm, MAX_MONTH_LOOKAHEAD), [minYm]);
   const [ym, setYm] = useState<YearMonth>(() => getCurrentYearMonth());
   const [data, setData] = useState<SlotsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isCurrentMonth = compareYearMonth(ym, minYm) === 0;
+  const isLastAllowedMonth = compareYearMonth(ym, maxYm) === 0;
 
   const loadSlots = useCallback(
     async (force = false, signal?: AbortSignal) => {
@@ -147,7 +155,7 @@ export default function JapanSlots() {
             ‹
           </button>
           <strong>{formatMonth(ym)}</strong>
-          <button className="mini-btn" type="button" onClick={() => setYm((current) => shiftMonth(current, 1))} aria-label="下一个月">
+          <button className="mini-btn" type="button" onClick={() => setYm((current) => shiftMonth(current, 1))} aria-label="下一个月" disabled={isLastAllowedMonth || loading}>
             ›
           </button>
         </div>

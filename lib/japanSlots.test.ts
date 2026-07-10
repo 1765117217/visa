@@ -1,7 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { compareYearMonth, isBeforeYearMonth, parseMonth, summarize } from "./japanSlots";
+import {
+  MAX_MONTH_LOOKAHEAD,
+  addMonthsToYearMonth,
+  compareYearMonth,
+  isAfterYearMonth,
+  isBeforeYearMonth,
+  parseMonth,
+  summarize
+} from "./japanSlots";
 
 const monthHtml = `
   <table>
@@ -61,4 +69,14 @@ test("compareYearMonth and isBeforeYearMonth identify months before the current 
 
   assert.equal(isBeforeYearMonth({ year: 2026, month: 6 }, { year: 2026, month: 7 }), true);
   assert.equal(isBeforeYearMonth({ year: 2026, month: 7 }, { year: 2026, month: 7 }), false);
+});
+
+test("lookup window allows only the current month plus two future months", () => {
+  const current = { year: 2026, month: 7 };
+  const max = addMonthsToYearMonth(current, MAX_MONTH_LOOKAHEAD);
+
+  assert.deepEqual(max, { year: 2026, month: 9 });
+  assert.equal(isAfterYearMonth({ year: 2026, month: 9 }, max), false);
+  assert.equal(isAfterYearMonth({ year: 2026, month: 10 }, max), true);
+  assert.deepEqual(addMonthsToYearMonth({ year: 2026, month: 12 }, 2), { year: 2027, month: 2 });
 });

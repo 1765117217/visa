@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { isBeforeYearMonth, parseMonth, summarize, type YearMonth } from "@/lib/japanSlots";
+import {
+  MAX_MONTH_LOOKAHEAD,
+  addMonthsToYearMonth,
+  isAfterYearMonth,
+  isBeforeYearMonth,
+  parseMonth,
+  summarize,
+  type YearMonth
+} from "@/lib/japanSlots";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,6 +54,11 @@ function readMonthParam(req: NextRequest) {
 
   if (isBeforeYearMonth(requestedMonth, currentMonth)) {
     throw new BadRequestError("past months are not available");
+  }
+
+  const maxLookupMonth = addMonthsToYearMonth(currentMonth, MAX_MONTH_LOOKAHEAD);
+  if (isAfterYearMonth(requestedMonth, maxLookupMonth)) {
+    throw new BadRequestError("future months beyond the lookup window are not available");
   }
 
   return requestedMonth;

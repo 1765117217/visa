@@ -11,6 +11,8 @@ export interface YearMonth {
   month: number;
 }
 
+export const MAX_MONTH_LOOKAHEAD = 2;
+
 export const ICON_STATUS: Record<string, SlotStatus> = {
   icon_circle: "available",
   icon_triangle: "few",
@@ -63,4 +65,13 @@ export function compareYearMonth(left: YearMonth, right: YearMonth): -1 | 0 | 1 
 
 export function isBeforeYearMonth(value: YearMonth, lowerBound: YearMonth): boolean {
   return compareYearMonth(value, lowerBound) === -1;
+}
+
+export function isAfterYearMonth(value: YearMonth, upperBound: YearMonth): boolean {
+  return compareYearMonth(value, upperBound) === 1;
+}
+
+export function addMonthsToYearMonth(value: YearMonth, offset: number): YearMonth {
+  const date = new Date(value.year, value.month - 1 + offset, 1);
+  return { year: date.getFullYear(), month: date.getMonth() + 1 };
 }
