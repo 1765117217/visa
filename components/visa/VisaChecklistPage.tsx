@@ -14,6 +14,7 @@ import {
 
 import { passTypeOptions, visaTypeOptions, whatsappNumber, type ChecklistItem, type VisaPage } from "@/data/pages/site";
 import { InclusionGrid } from "@/components/marketing/HomePageClient";
+import JapanSlots from "@/components/visa/JapanSlots";
 import {
   fetchCurrentProfile,
   syncBasicDataToProfile
@@ -349,6 +350,8 @@ export default function VisaChecklistPage({ page }: { page: VisaPage }) {
             </div>
           </form>
         </section>
+
+        {page.country === "日本" ? <JapanSlots /> : null}
 
         {resultVisible ? (
           <section className="checklist-panel" id="resultPanel">
