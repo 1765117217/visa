@@ -11,6 +11,10 @@ export interface YearMonth {
   month: number;
 }
 
+export const JAPAN_SLOTS_EVENT = 12;
+export const JAPAN_SLOTS_PLAN = 22;
+export const JAPAN_SLOTS_CACHE_TTL_MIN_MS = 15 * 60 * 1000;
+export const JAPAN_SLOTS_CACHE_TTL_MAX_MS = 60 * 60 * 1000;
 export const MAX_MONTH_LOOKAHEAD = 2;
 
 export const ICON_STATUS: Record<string, SlotStatus> = {
@@ -74,4 +78,9 @@ export function isAfterYearMonth(value: YearMonth, upperBound: YearMonth): boole
 export function addMonthsToYearMonth(value: YearMonth, offset: number): YearMonth {
   const date = new Date(value.year, value.month - 1 + offset, 1);
   return { year: date.getFullYear(), month: date.getMonth() + 1 };
+}
+
+export function getRandomCacheTtlMs(random = Math.random): number {
+  const range = JAPAN_SLOTS_CACHE_TTL_MAX_MS - JAPAN_SLOTS_CACHE_TTL_MIN_MS;
+  return JAPAN_SLOTS_CACHE_TTL_MIN_MS + Math.round(range * random());
 }

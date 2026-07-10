@@ -18,8 +18,9 @@ interface SlotsResponse {
   days: DaySlot[];
   nextAvailable: string | null;
   availableCount: number;
-  fetchedAt: number;
-  cached: boolean;
+  fetchedAt?: number;
+  cached?: boolean;
+  stale?: boolean;
   error?: string;
 }
 
@@ -47,7 +48,7 @@ function formatQueryMonth({ year, month }: YearMonth) {
   return `${year}-${String(month).padStart(2, "0")}`;
 }
 
-function formatUpdatedAt(timestamp: number | null) {
+function formatUpdatedAt(timestamp: number | null | undefined) {
   if (!timestamp) return "尚未更新";
   return new Intl.DateTimeFormat("zh-MY", {
     hour: "2-digit",
@@ -73,14 +74,12 @@ export default function JapanSlots() {
   const isLastAllowedMonth = compareYearMonth(ym, maxYm) === 0;
 
   const loadSlots = useCallback(
-    async (force = false, signal?: AbortSignal) => {
+    async (signal?: AbortSignal) => {
       setLoading(true);
       setError(null);
 
       try {
         const params = new URLSearchParams({ month: formatQueryMonth(ym) });
-        if (force) params.set("force", "1");
-
         const response = await fetch(`/api/japan-slots?${params.toString()}`, {
           cache: "no-store",
           signal
@@ -95,6 +94,7 @@ export default function JapanSlots() {
       } catch (fetchError) {
         if (fetchError instanceof DOMException && fetchError.name === "AbortError") return;
         setError(fetchError instanceof Error ? fetchError.message : String(fetchError));
+        setData(null);
       } finally {
         setLoading(false);
       }
@@ -104,22 +104,10 @@ export default function JapanSlots() {
 
   useEffect(() => {
     const controller = new AbortController();
-    void loadSlots(false, controller.signal);
-
-    const intervalId = window.setInterval(() => {
-      void loadSlots(false);
-    }, 10 * 60 * 1000);
-
-    function refreshOnFocus() {
-      void loadSlots(false);
-    }
-
-    window.addEventListener("focus", refreshOnFocus);
+    void loadSlots(controller.signal);
 
     return () => {
       controller.abort();
-      window.clearInterval(intervalId);
-      window.removeEventListener("focus", refreshOnFocus);
     };
   }, [loadSlots]);
 
@@ -147,8 +135,8 @@ export default function JapanSlots() {
     <section className="panel slots-panel" aria-labelledby="japan-slots-title">
       <div className="slots-head">
         <div>
-          <p className="eyebrow">实时空位</p>
-          <h2 id="japan-slots-title">日本签证代理代递交预约空位</h2>
+          <p className="eyebrow">预约空位参考</p>
+          <h2 id="japan-slots-title">日本签证代理代递交预约空位参考</h2>
         </div>
         <div className="slots-toolbar" aria-label="切换月份">
           <button className="mini-btn" type="button" onClick={() => setYm((current) => shiftMonth(current, -1))} aria-label="上一个月" disabled={isCurrentMonth || loading}>
@@ -164,6 +152,7 @@ export default function JapanSlots() {
       <div className="slots-summary">
         <strong>{loading ? "正在读取预约空位..." : conclusion}</strong>
         {fewDays.length ? <span>仅剩少量名额：{fewDays.map((day) => formatShortDate(day.date)).join("、")}</span> : null}
+        {data?.stale ? <span>当前显示的是上次缓存结果，请以官方预约系统为准。</span> : null}
       </div>
 
       <div className="slots-meta">
@@ -173,14 +162,11 @@ export default function JapanSlots() {
           <span><b>×</b>已满</span>
         </div>
         <div className="slots-refresh">
-          <span>最后更新 {formatUpdatedAt(data?.fetchedAt ?? null)}</span>
-          <button className="btn btn-secondary" type="button" onClick={() => void loadSlots(true)} disabled={loading}>
-            刷新
-          </button>
+          <span>最后更新 {formatUpdatedAt(data?.fetchedAt)}</span>
         </div>
       </div>
 
-      {error ? <div className="slots-empty">暂时无法读取大使馆预约系统：{error}</div> : null}
+      {error ? <div className="slots-empty">暂时无法读取官方预约系统，请稍后再试或前往官方预约页确认。</div> : null}
 
       <div className="slots-cal" aria-label={`${formatMonth(ym)}预约空位月历`}>
         {WEEKDAYS.map((weekday) => (
@@ -204,7 +190,7 @@ export default function JapanSlots() {
         })}
       </div>
 
-      <p className="slots-note">签证预约通常需在预约日前 3 个工作日下午 3 点前完成。</p>
+      <p className="slots-note">空位仅供参考，最终以官方预约系统为准。签证预约通常需在预约日前 3 个工作日下午 3 点前完成。</p>
     </section>
   );
 }

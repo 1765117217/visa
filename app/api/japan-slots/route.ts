@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  JAPAN_SLOTS_CACHE_TTL_MAX_MS,
+  JAPAN_SLOTS_CACHE_TTL_MIN_MS,
+  JAPAN_SLOTS_EVENT,
+  JAPAN_SLOTS_PLAN,
   MAX_MONTH_LOOKAHEAD,
   addMonthsToYearMonth,
+  getRandomCacheTtlMs,
   isAfterYearMonth,
   isBeforeYearMonth,
   parseMonth,
@@ -18,13 +23,21 @@ const CALENDAR_URL = `${BASE}/reservations/calendar`;
 const AJAX_CALENDAR_URL = `${BASE}/ajax/reservations/calendar`;
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-const TTL = 10 * 60 * 1000;
-const cache = new Map<string, { data: JapanSlotsData; fetchedAt: number }>();
+const FAILURE_RETRY_COOLDOWN_MS = 5 * 60 * 1000;
+const cache = new Map<string, JapanSlotsCacheEntry>();
 
 interface JapanSlotsData {
   days: ReturnType<typeof parseMonth>;
   nextAvailable: string | null;
   availableCount: number;
+}
+
+interface JapanSlotsCacheEntry {
+  data?: JapanSlotsData;
+  fetchedAt?: number;
+  expiresAt?: number;
+  lastAttemptAt?: number;
+  lastError?: string;
 }
 
 class BadRequestError extends Error {}
@@ -64,7 +77,7 @@ function readMonthParam(req: NextRequest) {
   return requestedMonth;
 }
 
-async function scrape(event: number, plan: number, year: number, month: number): Promise<JapanSlotsData> {
+async function scrape(year: number, month: number): Promise<JapanSlotsData> {
   const initial = await fetch(CALENDAR_URL, {
     headers: { "User-Agent": UA },
     cache: "no-store"
@@ -80,8 +93,8 @@ async function scrape(event: number, plan: number, year: number, month: number):
   const body = new URLSearchParams({
     search: "exec",
     _csrfToken: csrf,
-    event: String(event),
-    plan: String(plan),
+    event: String(JAPAN_SLOTS_EVENT),
+    plan: String(JAPAN_SLOTS_PLAN),
     disp_type: "month",
     date: `${year}/${String(month).padStart(2, "0")}/01`
   });
@@ -110,38 +123,122 @@ async function scrape(event: number, plan: number, year: number, month: number):
   return { days, ...summarize(days) };
 }
 
+function buildPayload(
+  year: number,
+  month: number,
+  data: JapanSlotsData,
+  meta: {
+    fetchedAt: number;
+    cached: boolean;
+    stale?: boolean;
+    error?: string;
+  }
+) {
+  return {
+    month: `${year}-${String(month).padStart(2, "0")}`,
+    event: JAPAN_SLOTS_EVENT,
+    plan: JAPAN_SLOTS_PLAN,
+    ...data,
+    fetchedAt: meta.fetchedAt,
+    cached: meta.cached,
+    stale: Boolean(meta.stale),
+    error: meta.error
+  };
+}
+
+function getCacheExpiresAt(fetchedAt: number): number {
+  const ttl = Math.min(
+    JAPAN_SLOTS_CACHE_TTL_MAX_MS,
+    Math.max(JAPAN_SLOTS_CACHE_TTL_MIN_MS, getRandomCacheTtlMs())
+  );
+  return fetchedAt + ttl;
+}
+
 export async function GET(req: NextRequest) {
   try {
-    const { year, month } = readMonthParam(req);
-    const event = Number(req.nextUrl.searchParams.get("event") ?? 12);
-    const plan = Number(req.nextUrl.searchParams.get("plan") ?? 22);
-    const force = req.nextUrl.searchParams.get("force") === "1";
-    const key = `${event}:${plan}:${year}-${month}`;
-    const hit = cache.get(key);
-
-    if (!force && hit && Date.now() - hit.fetchedAt < TTL) {
-      return NextResponse.json({
-        month: `${year}-${String(month).padStart(2, "0")}`,
-        event,
-        plan,
-        ...hit.data,
-        fetchedAt: hit.fetchedAt,
-        cached: true
-      });
+    if (process.env.JAPAN_SLOTS_ENABLED === "false") {
+      return NextResponse.json(
+        {
+          enabled: false,
+          error: "Japan slots lookup is temporarily disabled"
+        },
+        { status: 503 }
+      );
     }
 
-    const data = await scrape(event, plan, year, month);
-    const fetchedAt = Date.now();
-    cache.set(key, { data, fetchedAt });
+    const { year, month } = readMonthParam(req);
+    const key = `${JAPAN_SLOTS_EVENT}:${JAPAN_SLOTS_PLAN}:${year}-${month}`;
+    const hit = cache.get(key);
+    const now = Date.now();
 
-    return NextResponse.json({
-      month: `${year}-${String(month).padStart(2, "0")}`,
-      event,
-      plan,
-      ...data,
-      fetchedAt,
-      cached: false
-    });
+    if (hit?.data && hit.fetchedAt && hit.expiresAt && now < hit.expiresAt) {
+      return NextResponse.json(
+        buildPayload(year, month, hit.data, {
+          fetchedAt: hit.fetchedAt,
+          cached: true
+        })
+      );
+    }
+
+    if (hit?.lastAttemptAt && now - hit.lastAttemptAt < FAILURE_RETRY_COOLDOWN_MS) {
+      if (hit.data && hit.fetchedAt) {
+        return NextResponse.json(
+          buildPayload(year, month, hit.data, {
+            fetchedAt: hit.fetchedAt,
+            cached: true,
+            stale: true,
+            error: hit.lastError
+          })
+        );
+      }
+
+      return NextResponse.json(
+        {
+          error: hit.lastError || "Japan slots lookup is cooling down after a failed attempt"
+        },
+        { status: 503 }
+      );
+    }
+
+    const attemptedAt = Date.now();
+
+    try {
+      const data = await scrape(year, month);
+      const fetchedAt = Date.now();
+      cache.set(key, {
+        data,
+        fetchedAt,
+        expiresAt: getCacheExpiresAt(fetchedAt),
+        lastAttemptAt: attemptedAt
+      });
+
+      return NextResponse.json(
+        buildPayload(year, month, data, {
+          fetchedAt,
+          cached: false
+        })
+      );
+    } catch (scrapeError) {
+      const message = scrapeError instanceof Error ? scrapeError.message : String(scrapeError);
+      cache.set(key, {
+        ...hit,
+        lastAttemptAt: attemptedAt,
+        lastError: message
+      });
+
+      if (hit?.data && hit.fetchedAt) {
+        return NextResponse.json(
+          buildPayload(year, month, hit.data, {
+            fetchedAt: hit.fetchedAt,
+            cached: true,
+            stale: true,
+            error: message
+          })
+        );
+      }
+
+      return NextResponse.json({ error: message }, { status: 502 });
+    }
   } catch (error) {
     const status = error instanceof BadRequestError ? 400 : 502;
     const message = error instanceof Error ? error.message : String(error);
