@@ -482,7 +482,7 @@ textarea {
 
 .slots-legend {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   color: var(--slate-700);
   font-weight: 700;
@@ -491,11 +491,40 @@ textarea {
 .slots-legend span {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
 }
 
 .slots-legend b {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
   font-size: 1.1rem;
+  line-height: 1;
+}
+
+.slots-legend span:nth-child(1) {
+  border-color: rgba(30, 125, 52, 0.2);
+  background: #e6f4ea;
+  color: #1e7d34;
+}
+
+.slots-legend span:nth-child(2) {
+  border-color: rgba(154, 79, 5, 0.2);
+  background: #fff4ca;
+  color: #9a4f05;
+}
+
+.slots-legend span:nth-child(3) {
+  border-color: rgba(139, 149, 164, 0.24);
+  background: #eef1f5;
+  color: #7d8796;
 }
 
 .slots-refresh {
